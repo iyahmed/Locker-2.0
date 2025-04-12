@@ -2,3 +2,4 @@ default.etcd
 etcd-local.etcd
 execs/waffle_data.txt
 execs/default_data.txt
+Locker-2.0.code-workspace

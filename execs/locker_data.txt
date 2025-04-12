@@ -1,0 +1,23 @@
+Benchmark data log
+
+======= Request 1 =======
+Data: [{"rid":"user9","op":"write","key":"Anamnia","val":"\"Yw==\""},{"rid":"user3","op":"read","key":"Anamnia","val":"\"aQ==\""},{"rid":"user4","op":"write","key":"assuaged","val":"\"MkRF\""}]
+Response: {"user3":"\"Yw==\"","user4":"correct_write","user9":"correct_write"}
+
+======= Request 2 =======
+Data: [{"rid":"user6","op":"read","key":"assuaged","val":"\"eUtw\""},{"rid":"user9","op":"write","key":"actualities","val":"\"Nk1N\""},{"rid":"user9","op":"read","key":"Anamnia","val":"\"Wkw=\""}]
+Response: {"user6":"\"MkRF\"","user9":["correct_write","\"Yw==\""]}
+
+======= Request 3 =======
+Data: [{"rid":"user10","op":"read","key":"Anamnia","val":"\"Tg==\""},{"rid":"user8","op":"read","key":"actualities","val":"\"Ug==\""},{"rid":"user2","op":"read","key":"assuaged","val":"\"QXk=\""}]
+Response: {"user10":"\"Yw==\"","user2":"\"MkRF\"","user8":"\"Nk1N\""}
+
+======= Request 4 =======
+Data: [{"rid":"user1","op":"read","key":"Anamnia","val":"\"bno=\""},{"rid":"user8","op":"write","key":"adherences","val":"\"MTF4\""},{"rid":"user2","op":"write","key":"abbozzo","val":"\"cQ==\""}]
+Response: {"user1":"\"Yw==\"","user2":"correct_write","user8":"correct_write"}
+
+======= Request 5 =======
+Data: [{"rid":"user10","op":"write","key":"approvals","val":"\"SA==\""},{"rid":"user1","op":"write","key":"Abrahamidae","val":"\"WUk3\""},{"rid":"user4","op":"read","key":"assuaged","val":"\"ZTQ=\""}]
+Response: {"user1":"correct_write","user10":"correct_write","user4":"\"MkRF\""}
+Runtime: 2.906140992 seconds
+Final configuration: 5 requests, 3 batch size, 50% reads

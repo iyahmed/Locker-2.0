@@ -5,9 +5,9 @@ start=$(date +%s.%N)
 
 # Default configuration parameters
 NUM_REQUESTS=5         # Number of requests to send
-MAX_BATCH_SIZE=25      # Maximum number of operations per batch
+BATCH_SIZE=3           # Size of a batch
 MAX_VAL_SIZE=3         # Maximum value size in bytes
-READ_PERCENTAGE=50     # Default: 50% reads, 50% writes
+READ_PERCENTAGE=50     # 50% reads and 50% writes by default
 
 # Process command line arguments
 while [[ $# -gt 0 ]]; do
@@ -17,7 +17,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -b|--batch-size)
-      MAX_BATCH_SIZE="$2"
+      BATCH_SIZE="$2"
       shift 2
       ;;
     -v|--val-size)
@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: $0 [options]"
       echo "Options:"
       echo "  -n, --num-requests NUM      Number of requests to send (default: 5)"
-      echo "  -b, --batch-size MAX        Maximum operations per batch (default: 25)"
+      echo "  -b, --batch-size SIZE       Number of ops per request batch (default: 3)"
       echo "  -v, --val-size MAX          Maximum value size in bytes (default: 3)"
       echo "  -r, --read-percentage PCT   Percentage of read operations (default: 50)"
       echo "  -h, --help                  Show this help message"
@@ -52,75 +52,72 @@ if [ "$READ_PERCENTAGE" -lt 0 ] || [ "$READ_PERCENTAGE" -gt 100 ]; then
   exit 1
 fi
 
-# Possible operation types
-# OPS=("read" "write")
-
 # Read keys from file, each on a new line
 KEYS=()
 while IFS= read -r line; do
     KEYS+=("$line")
-done < "medium_keys.txt"
+done < "large_keys.txt"
+if [ "${#KEYS[@]}" -eq 0 ]; then
+  echo "Error: large_keys.txt is empty or missing"
+  exit 1
+fi
 
+# There are 10 users
 USERS=("user1" "user2" "user3" "user4" "user5" "user6" "user7" "user8" "user9" "user10")
+
+# Store all written keys for future reads
+WRITTEN_KEYS=()
 
 # Target URL
 URL="http://localhost:5000"
 
 # Clear data file at the start
-echo "Benchmark data log" > waffle_data.txt
-echo "Configuration: $NUM_REQUESTS requests, max batch size $MAX_BATCH_SIZE, read percentage $READ_PERCENTAGE%" >> waffle_data.txt
+echo "Benchmark data log" > locker_data.txt
 
 for ((i=1; i<=NUM_REQUESTS; i++)); do
-    # Determine batch size for this request (between 1 and MAX_BATCH_SIZE)
-    BATCH_SIZE=$((1 + RANDOM % MAX_BATCH_SIZE))
-    
     # Generate the JSON array for the batch
     DATA="["
     
     for ((j=1; j<=BATCH_SIZE; j++)); do
         # Determine operation based on read percentage
         RAND=$((RANDOM % 100 + 1))
-        if [ $RAND -le $READ_PERCENTAGE ]; then
-            OP="read"
+        if [ ${#WRITTEN_KEYS[@]} -gt 0 ] && [ $RAND -le $READ_PERCENTAGE ]; then
+          OP="read"
+          KEY=${WRITTEN_KEYS[$RANDOM % ${#WRITTEN_KEYS[@]}]}
         else
-            OP="write"
+          OP="write"
+          KEY=${KEYS[$RANDOM % ${#KEYS[@]}]}
+          WRITTEN_KEYS+=("$KEY")
         fi
         
-        # Generate random key and user
-        KEY=${KEYS[$RANDOM % ${#KEYS[@]}]}
+        # Generate random user
         USER=${USERS[$RANDOM % ${#USERS[@]}]}
         
-        # Generate value (only needed for writes, but generate anyway)
+        # Generate random value (only needed for writes, but generate anyway)
         VAL_SIZE=$((1 + RANDOM % MAX_VAL_SIZE))
         VAL=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c $VAL_SIZE | base64)
-        
+
         # Add operation to batch
-        DATA+="{"
-        DATA+="\"rid\":\"$USER\","
-        DATA+="\"op\":\"$OP\","
-        DATA+="\"key\":\"$KEY\","
-        DATA+="\"val\":\"$VAL\""
-        DATA+="}"
+        ENTRY="{\"rid\":\"$USER\",\"op\":\"$OP\",\"key\":\"$KEY\",\"val\":\"\\\"$VAL\\\"\"}"
+        DATA+="$ENTRY"
         
-        # Add comma if not the last item in batch
-        if [ $j -lt $BATCH_SIZE ]; then
-            DATA+=","
+        # Append comma if not last item
+        if [ "$j" -lt "$BATCH_SIZE" ]; then
+          DATA+=","
         fi
     done
     
     DATA+="]"
     
-    # Log request information to waffle_data.txt with append (>>)
-    echo -e "\n======= Request $i =======" >> waffle_data.txt
-    echo "Batch size: $BATCH_SIZE" >> waffle_data.txt
-    echo "Data: $DATA" >> waffle_data.txt
+    # Log request information to locker_data.txt with append (>>)
+    echo -e "\n======= Request $i =======" >> locker_data.txt
+    echo "Data: $DATA" >> locker_data.txt
     
     # Send curl request and capture response
     RESPONSE=$(curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$DATA")
     
     # Log response
-    echo "Response: $RESPONSE" >> waffle_data.txt
-    
+    echo "Response: $RESPONSE" >> locker_data.txt
     echo "Request $i sent with batch size: $BATCH_SIZE"
 done
 
@@ -129,5 +126,5 @@ end=$(date +%s.%N)
 runtime=$(echo "$end - $start" | bc)
 
 echo "The benchmark's runtime was $runtime seconds."
-echo "Runtime: $runtime seconds" >> waffle_data.txt
-echo "Final configuration: $NUM_REQUESTS requests, read percentage $READ_PERCENTAGE%" >> waffle_data.txt
+echo "Runtime: $runtime seconds" >> locker_data.txt
+echo "Final configuration: $NUM_REQUESTS requests, $BATCH_SIZE batch size, $READ_PERCENTAGE% reads" >> locker_data.txt

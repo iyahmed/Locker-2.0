@@ -1,4 +1,4 @@
-module waffle
+module locker
 
 go 1.22
 
