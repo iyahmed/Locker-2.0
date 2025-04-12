@@ -1,23 +1,23 @@
 Benchmark data log
 
 ======= Request 1 =======
-Data: [{"rid":"user6","op":"write","key":"Achimenes","val":"\"MXU=\""},{"rid":"user6","op":"read","key":"Achimenes","val":"\"NQ==\""},{"rid":"user4","op":"read","key":"Achimenes","val":"\"U2I=\""}]
-Response: {"user4":"\"MXU=\"","user6":["correct_write","\"MXU=\""]}
+Data: [{"rid":"user6","op":"write","key":"backpedaling","val":"\"eg==\""},{"rid":"user3","op":"write","key":"allegorists","val":"\"bmtY\""},{"rid":"user3","op":"read","key":"allegorists","val":"\"SkU=\""}]
+Response: {"user3":[null,"correct_write"],"user6":"correct_write"}
 
 ======= Request 2 =======
-Data: [{"rid":"user5","op":"write","key":"abreed","val":"\"VQ==\""},{"rid":"user5","op":"read","key":"Achimenes","val":"\"Ng==\""},{"rid":"user4","op":"read","key":"abreed","val":"\"Yms=\""}]
-Response: {"user4":null,"user5":["correct_write","\"MXU=\""]}
+Data: [{"rid":"user4","op":"write","key":"ASM","val":"\"MlM=\""},{"rid":"user1","op":"read","key":"ASM","val":"\"SU5u\""},{"rid":"user2","op":"write","key":"alcarraza","val":"\"RkJu\""}]
+Response: {"user1":null,"user2":"correct_write","user4":"correct_write"}
 
 ======= Request 3 =======
-Data: [{"rid":"user10","op":"read","key":"Achimenes","val":"\"VA==\""},{"rid":"user1","op":"read","key":"abreed","val":"\"SjFr\""},{"rid":"user7","op":"write","key":"arriswise","val":"\"dXlK\""}]
-Response: {"user1":"\"VQ==\"","user10":"\"MXU=\"","user7":"correct_write"}
+Data: [{"rid":"user5","op":"write","key":"B/S","val":"\"Yms=\""},{"rid":"user6","op":"read","key":"ASM","val":"\"Tw==\""},{"rid":"user9","op":"read","key":"ASM","val":"\"dks=\""}]
+Response: {"user5":"correct_write","user6":"\"MlM=\"","user9":"\"MlM=\""}
 
 ======= Request 4 =======
-Data: [{"rid":"user6","op":"read","key":"abreed","val":"\"UTFa\""},{"rid":"user1","op":"write","key":"acquiesence","val":"\"NGc=\""},{"rid":"user2","op":"read","key":"abreed","val":"\"anNv\""}]
-Response: {"user1":"correct_write","user2":"\"VQ==\"","user6":"\"VQ==\""}
+Data: [{"rid":"user7","op":"read","key":"alcarraza","val":"\"WA==\""},{"rid":"user1","op":"read","key":"ASM","val":"\"NkM2\""},{"rid":"user10","op":"write","key":"adscriptive","val":"\"M0tJ\""}]
+Response: {"user1":"\"MlM=\"","user10":"correct_write","user7":"\"RkJu\""}
 
 ======= Request 5 =======
-Data: [{"rid":"user5","op":"write","key":"Ampelidaceae","val":"\"VQ==\""},{"rid":"user4","op":"write","key":"actorship","val":"\"RA==\""},{"rid":"user7","op":"write","key":"antidynamic","val":"\"Mw==\""}]
-Response: {"user4":"correct_write","user5":"correct_write","user7":"correct_write"}
-Runtime: 2.347784407 seconds
+Data: [{"rid":"user5","op":"write","key":"bacao","val":"\"WEE=\""},{"rid":"user9","op":"write","key":"Alsace-lorrainer","val":"\"YUlJ\""},{"rid":"user7","op":"read","key":"backpedaling","val":"\"RjZp\""}]
+Response: {"user5":"correct_write","user7":"\"eg==\"","user9":"correct_write"}
+Runtime: 2.290433389 seconds
 Final configuration: 5 requests, 3 batch size, 50% reads

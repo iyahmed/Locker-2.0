@@ -4,6 +4,8 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"flag"
 	"log"
 	"net/http"
 	"strings"
@@ -106,24 +108,29 @@ func handleRequests(requests []Request, etcdClient *clientv3.Client) map[string]
 }
 
 func main() {
+	// Command-line flags, with default values and changeable by the client
+	apiPort := flag.Int("api-port", 5000, "Listening port for the client's Locker API server (By default, 5000)")
+	etcdPort := flag.String("etcd-endpoint", "http://localhost:2379", "Listening port for the server's etcd API server (By default, http://localhost:2379)")
+	flag.Parse()
+	apiAddr := fmt.Sprintf(":%d", *apiPort) // Reading the API port as an Integer and converting it into a String
+	
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { // Set up an HTTP server
 		var requests []Request
 		if err := json.NewDecoder(r.Body).Decode(&requests); err != nil { // Handling HTTP errors
 			http.Error(w, err.Error(), http.StatusBadRequest)
 			return
 		}
-
+		
 		// Setup an etcd client
-		// TODO: Support an CLI argument specifying which etcd port to use, with 2379 being the default
 		etcdClient, err := clientv3.New(clientv3.Config{
-			Endpoints:   []string{"http://localhost:2379"},
+			Endpoints:   []string{*etcdPort},
 			DialTimeout: 5 * time.Second,
-		})
+		}) // The etcd server is listening on port etcdPort
 		if err != nil { // Handling etcd timeouts
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
-		defer etcdClient.Close()
+		defer etcdClient.Close() // We do not close the etcd server until we have received all the responses back
 
 		// Processing etcd responses to the API
 		responses := handleRequests(requests, etcdClient)
@@ -134,7 +141,6 @@ func main() {
 	})
 
 	// Logging information
-	// TODO: Support an CLI argument specifying which API port to use, with 5000 being the default
-	log.Println("Proxy running on port 5000")
-	log.Fatal(http.ListenAndServe(":5000", nil))
+	log.Println("Locker 2.0 is running on port", *apiPort)
+	log.Fatal(http.ListenAndServe(apiAddr, nil)) // The API server is listening on port apiPort 
 }
