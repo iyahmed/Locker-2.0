@@ -1,4 +1,4 @@
-package main
+package main // TODO: Implement the security measures and connect them with `secure.go`
 
 
 import (
@@ -117,6 +117,7 @@ func main() {
 		}
 
 		// Setup an etcd client
+		// TODO: Support an CLI argument specifying which etcd port to use, with 2379 being the default
 		etcdClient, err := clientv3.New(clientv3.Config{
 			Endpoints:   []string{"http://localhost:2379"},
 			DialTimeout: 5 * time.Second,
@@ -136,6 +137,7 @@ func main() {
 	})
 
 	// Logging information
+	// TODO: Support an CLI argument specifying which API port to use, with 5000 being the default
 	log.Println("Proxy running on port 5000")
 	log.Fatal(http.ListenAndServe(":5000", nil))
 }

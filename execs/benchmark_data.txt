@@ -1,0 +1,23 @@
+Benchmark data log
+
+======= Request 1 =======
+Data: [{"rid":"user6","op":"write","key":"Achimenes","val":"\"MXU=\""},{"rid":"user6","op":"read","key":"Achimenes","val":"\"NQ==\""},{"rid":"user4","op":"read","key":"Achimenes","val":"\"U2I=\""}]
+Response: {"user4":"\"MXU=\"","user6":["correct_write","\"MXU=\""]}
+
+======= Request 2 =======
+Data: [{"rid":"user5","op":"write","key":"abreed","val":"\"VQ==\""},{"rid":"user5","op":"read","key":"Achimenes","val":"\"Ng==\""},{"rid":"user4","op":"read","key":"abreed","val":"\"Yms=\""}]
+Response: {"user4":null,"user5":["correct_write","\"MXU=\""]}
+
+======= Request 3 =======
+Data: [{"rid":"user10","op":"read","key":"Achimenes","val":"\"VA==\""},{"rid":"user1","op":"read","key":"abreed","val":"\"SjFr\""},{"rid":"user7","op":"write","key":"arriswise","val":"\"dXlK\""}]
+Response: {"user1":"\"VQ==\"","user10":"\"MXU=\"","user7":"correct_write"}
+
+======= Request 4 =======
+Data: [{"rid":"user6","op":"read","key":"abreed","val":"\"UTFa\""},{"rid":"user1","op":"write","key":"acquiesence","val":"\"NGc=\""},{"rid":"user2","op":"read","key":"abreed","val":"\"anNv\""}]
+Response: {"user1":"correct_write","user2":"\"VQ==\"","user6":"\"VQ==\""}
+
+======= Request 5 =======
+Data: [{"rid":"user5","op":"write","key":"Ampelidaceae","val":"\"VQ==\""},{"rid":"user4","op":"write","key":"actorship","val":"\"RA==\""},{"rid":"user7","op":"write","key":"antidynamic","val":"\"Mw==\""}]
+Response: {"user4":"correct_write","user5":"correct_write","user7":"correct_write"}
+Runtime: 2.347784407 seconds
+Final configuration: 5 requests, 3 batch size, 50% reads

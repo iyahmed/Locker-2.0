@@ -72,7 +72,7 @@ WRITTEN_KEYS=()
 URL="http://localhost:5000"
 
 # Clear data file at the start
-echo "Benchmark data log" > locker_data.txt
+echo "Benchmark data log" > benchmark_data.txt
 
 for ((i=1; i<=NUM_REQUESTS; i++)); do
     # Generate the JSON array for the batch
@@ -109,15 +109,15 @@ for ((i=1; i<=NUM_REQUESTS; i++)); do
     
     DATA+="]"
     
-    # Log request information to locker_data.txt with append (>>)
-    echo -e "\n======= Request $i =======" >> locker_data.txt
-    echo "Data: $DATA" >> locker_data.txt
+    # Log request information to benchmark_data.txt with append (>>)
+    echo -e "\n======= Request $i =======" >> benchmark_data.txt
+    echo "Data: $DATA" >> benchmark_data.txt
     
     # Send curl request and capture response
     RESPONSE=$(curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$DATA")
     
     # Log response
-    echo "Response: $RESPONSE" >> locker_data.txt
+    echo "Response: $RESPONSE" >> benchmark_data.txt
     echo "Request $i sent with batch size: $BATCH_SIZE"
 done
 
@@ -126,5 +126,5 @@ end=$(date +%s.%N)
 runtime=$(echo "$end - $start" | bc)
 
 echo "The benchmark's runtime was $runtime seconds."
-echo "Runtime: $runtime seconds" >> locker_data.txt
-echo "Final configuration: $NUM_REQUESTS requests, $BATCH_SIZE batch size, $READ_PERCENTAGE% reads" >> locker_data.txt
+echo "Runtime: $runtime seconds" >> benchmark_data.txt
+echo "Final configuration: $NUM_REQUESTS requests, $BATCH_SIZE batch size, $READ_PERCENTAGE% reads" >> benchmark_data.txt
