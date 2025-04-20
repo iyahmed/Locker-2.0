@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 	clientv3 "go.etcd.io/etcd/client/v3"
-	// "locker/libs"
+	"locker/libs/oram"
 )
 
 
@@ -144,5 +144,41 @@ func main() {
 
 	// Logging information
 	log.Println("Locker 2.0 is running on port", *apiPort)
-	log.Fatal(http.ListenAndServe(apiAddr, nil)) // The API server is listening on port apiPort 
+	log.Fatal(http.ListenAndServe(apiAddr, nil)) // The API server is listening on port apiPort
+
+	// TODO: PathORAM data structure tests
+	// ORAM constructor and destruction
+	blockSize, logCap, z := uint32(32), uint32(5), uint32(3) // By descending order
+	o := oram.ORAM_Init(logCap, blockSize, z) // Constructing the PathORAM Go object
+	defer o.ORAM_Destruct() // For memory safety, destructing the object after we are done using it
+
+	// ORAM CRUD (Create, Read, Update, and Destroy) Operations
+	// Create
+	dataOne := []byte("Hello, World!") // An example of a message that we want to keep hidden
+	o.ORAM_Set(1, dataOne) // Putting the first hidden message in index 1
+	// Read
+	resultOne := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne))
+	
+	// Update
+	dataTwo := []byte("Bonjour, Monde!") // An example of a message that we want to keep hidden
+	o.ORAM_Set(1, dataTwo) // Putting the first hidden message in index 1
+	// Read
+	resultTwo := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultTwo))
+
+	// Create
+	dataThree := []byte("Hello, World!") // An example of a message that we want to keep hidden
+	o.ORAM_Set(2, dataThree) // Putting the first hidden message in index 2
+	resultThree := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne))
+	resultFour := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
+	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultFour))
+
+	// Destroy
+	o.ORAM_Delete(2, int(blockSize)) // Deleting the hidden message in index 2
+	resultFive := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive))
+	resultSix := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
+	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix))
 }
