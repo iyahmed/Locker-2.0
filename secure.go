@@ -110,42 +110,6 @@ func handleRequests(requests []Request, etcdClient *clientv3.Client) map[string]
 }
 
 func main() {
-	// Command-line flags, with default values and changeable by the client
-	apiPort := flag.Int("api-port", 5000, "Listening port for the client's Locker API server (By default, 5000)")
-	etcdPort := flag.String("etcd-endpoint", "http://localhost:2379", "Listening port for the server's etcd API server (By default, http://localhost:2379)")
-	flag.Parse()
-	apiAddr := fmt.Sprintf(":%d", *apiPort) // Reading the API port as an Integer and converting it into a String
-	
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { // Set up an HTTP server
-		var requests []Request
-		if err := json.NewDecoder(r.Body).Decode(&requests); err != nil { // Handling HTTP errors
-			http.Error(w, err.Error(), http.StatusBadRequest)
-			return
-		}
-		
-		// Setup an etcd client
-		etcdClient, err := clientv3.New(clientv3.Config{
-			Endpoints:   []string{*etcdPort},
-			DialTimeout: 5 * time.Second,
-		}) // The etcd server is listening on port etcdPort
-		if err != nil { // Handling etcd timeouts
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		defer etcdClient.Close() // We do not close the etcd server until we have received all the responses back
-
-		// Processing etcd responses to the API
-		responses := handleRequests(requests, etcdClient)
-		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(responses); err != nil { // Handling etcd errors
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-	})
-
-	// Logging information
-	log.Println("Locker 2.0 is running on port", *apiPort)
-	log.Fatal(http.ListenAndServe(apiAddr, nil)) // The API server is listening on port apiPort
-
 	// TODO: PathORAM data structure tests
 	// ORAM constructor and destruction
 	blockSize, logCap, z := uint32(32), uint32(5), uint32(3) // By descending order
@@ -187,4 +151,40 @@ func main() {
 	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive)) // Printing out the message at index 1
 	resultSix := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
 	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix)) // Printing out the message at index 2
+	
+	// Command-line flags, with default values and changeable by the client
+	apiPort := flag.Int("api-port", 5000, "Listening port for the client's Locker API server (By default, 5000)")
+	etcdPort := flag.String("etcd-endpoint", "http://localhost:2379", "Listening port for the server's etcd API server (By default, http://localhost:2379)")
+	flag.Parse()
+	apiAddr := fmt.Sprintf(":%d", *apiPort) // Reading the API port as an Integer and converting it into a String
+	
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { // Set up an HTTP server
+		var requests []Request
+		if err := json.NewDecoder(r.Body).Decode(&requests); err != nil { // Handling HTTP errors
+			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
+		}
+		
+		// Setup an etcd client
+		etcdClient, err := clientv3.New(clientv3.Config{
+			Endpoints:   []string{*etcdPort},
+			DialTimeout: 5 * time.Second,
+		}) // The etcd server is listening on port etcdPort
+		if err != nil { // Handling etcd timeouts
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		defer etcdClient.Close() // We do not close the etcd server until we have received all the responses back
+
+		// Processing etcd responses to the API
+		responses := handleRequests(requests, etcdClient)
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(responses); err != nil { // Handling etcd errors
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
+	})
+
+	// Logging information
+	log.Println("Locker 2.0 is running on port", *apiPort)
+	log.Fatal(http.ListenAndServe(apiAddr, nil)) // The API server is listening on port apiPort
 }
