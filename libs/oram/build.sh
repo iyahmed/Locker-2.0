@@ -1,23 +1,20 @@
 #!/bin/bash
+# Ismail Ahmed: Builds the dependencies of PathORAM
 
-# libs/build.sh
-# Ismail Ahmed: Builds all the C++ wrappers of pre-existing oblivious data structure implementation, such as PathORAM
-
-# Setting the environment variables
+# Set properties
 set -e
-# Getting the directory of the libs folder
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-ROOT="$DIR/../../deps/path-oram/path-oram"
-SRC="$ROOT/src"
-INCLUDE="$ROOT/include"
+cd "$(dirname "$0")"
 
-g++ -std=c++17 -fPIC \
-    -I "$INCLUDE" \
-    -DSHARED -DNO_STORAGE_ADAPTERS \
-    -Wall -O3 \
-    -shared -o "$DIR/libpathoram.so" \
-    "$DIR/PathORAM.cpp" \
-    "$SRC/oram.cpp" \
-    "$SRC/utility.cpp" \
-    # "$SRC/config.cpp" \
-    # "$SRC/logger.cpp"
+# Define paths
+PATHORAM_INCLUDE="../../deps/PathORAM/include"
+PATHORAM_OBJ="../../deps/PathORAM/obj"
+
+# Compile the  implementation
+g++ -std=c++11 -fPIC -c -I$PATHORAM_INCLUDE PathORAM.cpp -o PathORAM.o
+g++ -std=c++11 -fPIC -c dummy.cpp -o dummy.o
+
+# Link everything together
+ar rcs libpathoram.a PathORAM.o dummy.o $PATHORAM_OBJ/*.o
+
+# Clean up
+echo "Library built successfully"

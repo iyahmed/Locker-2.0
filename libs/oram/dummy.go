@@ -1,7 +1,7 @@
 package oram
 /*
-#cgo CXXFLAGS: -std=c++17 -fPIC -DSHARED -DNO_STORAGE_ADAPTERS -I${SRCDIR}/../../deps/path-oram/path-oram/include
-#cgo LDFLAGS: -L${SRCDIR} -lpathoram -lstdc++
+#cgo CXXFLAGS: -std=c++11 -fPIC -I${SRCDIR}/../../deps/PathORAM/include
+#cgo LDFLAGS: -L${SRCDIR} -l:libpathoram.a -L${SRCDIR}/../../deps/PathORAM/obj -lstdc++
 extern int trigger_cgo();
 */
 import "C"

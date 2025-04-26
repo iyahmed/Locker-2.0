@@ -5,17 +5,15 @@ package oram
 /*
 #include <stdint.h>
 #include <stdlib.h>
-#include "oram.hpp"
-
 void* oram_init(uint32_t log_capacity, uint32_t block_size, uint32_t z);
 void  oram_destruct(void* oram);
 void  oram_get(void* oram, uint64_t id, uint8_t *out_data, size_t data_len);
-void  oram_set(void* oram, uint64_t id, const uint8_t *data, size_t data_len);
+void  oram_set(void* oram, uint64_t id, const uint8_t *in_data, size_t data_len);
 void  oram_delete(void* oram, uint64_t id, uint32_t block_size);
 */
 import "C"
 import "unsafe"
-
+// #include "OramInterface.h"
 type ORAM struct { // Using the C++ wrapper's ORAM struct for an unsafe C pointer
 	ptr unsafe.Pointer
 }
@@ -33,9 +31,9 @@ func (o *ORAM) ORAM_Destruct() { // ORAM destructor function
 	}
 }
 
-func (o *ORAM) ORAM_Get(id uint64, size int) []byte { // ORAM getter function
-	out := make([]byte, size) // Creating an output object
-	C.oram_get(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&out[0])), C.size_t(size)) // Getting the requested value from the ORAM
+func (o *ORAM) ORAM_Get(id uint64, blockSize int) []byte { // ORAM getter function
+	out := make([]byte, blockSize) // Creating an output object
+	C.oram_get(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&out[0])), C.size_t(blockSize)) // Getting the requested value from the ORAM
 	
 	return out // Returning the output object
 }

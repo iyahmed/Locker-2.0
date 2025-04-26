@@ -153,32 +153,38 @@ func main() {
 	defer o.ORAM_Destruct() // For memory safety, destructing the object after we are done using it
 
 	// ORAM CRUD (Create, Read, Update, and Destroy) Operations
-	// Create
+	// Test 1: Insert "Hello, World!" at index 1
 	dataOne := []byte("Hello, World!") // An example of a message that we want to keep hidden
 	o.ORAM_Set(1, dataOne) // Putting the first hidden message in index 1
-	// Read
-	resultOne := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne))
 	
-	// Update
+	// Test 2: Read "Hello, World!" from index 1
+	resultOne := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne)) // Printing out the message at index 1
+	
+	// Test 3: Update "Hello, World!" at index 1 to be "Bonjour, Monde!"
 	dataTwo := []byte("Bonjour, Monde!") // An example of a message that we want to keep hidden
 	o.ORAM_Set(1, dataTwo) // Putting the first hidden message in index 1
-	// Read
-	resultTwo := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultTwo))
 
-	// Create
+	// Test 4: Read "Bonjour, Monde!" from index 1
+	resultTwo := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultTwo)) // Printing out the message at index 1
+
+	// Test 5: Insert "Hello, World!" at index 2
 	dataThree := []byte("Hello, World!") // An example of a message that we want to keep hidden
 	o.ORAM_Set(2, dataThree) // Putting the first hidden message in index 2
+	
+	// Test 6: Read "Hello, World!" from index 1 and "Bonjour, Monde!" from index 2
 	resultThree := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne))
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultThree)) // Printing out the message at index 1
 	resultFour := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
-	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultFour))
+	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultFour)) // Printing out the message at index 2
 
-	// Destroy
-	o.ORAM_Delete(2, int(blockSize)) // Deleting the hidden message in index 2
+	// Test 7: Destroy "Bonjour, Monde!" from index 2
+	o.ORAM_Delete(2, blockSize) // Deleting the hidden message in index 2
+
+	// Test 8: Read "Hello, World!" from index 1 and NIL from index 2
 	resultFive := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive))
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive)) // Printing out the message at index 1
 	resultSix := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
-	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix))
+	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix)) // Printing out the message at index 2
 }
