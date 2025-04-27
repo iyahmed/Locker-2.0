@@ -32,20 +32,34 @@ func (o *ORAM) ORAM_Destruct() { // ORAM destructor function
 }
 
 func (o *ORAM) ORAM_Get(id uint64, blockSize int) []byte { // ORAM getter function
-	out := make([]byte, blockSize) // Creating an output object
-	C.oram_get(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&out[0])), C.size_t(blockSize)) // Getting the requested value from the ORAM
+	// Memory safety checks
+	if o.ptr == nil || blockSize < 0 {
+		return nil
+	}
 	
-	return out // Returning the output object
+	buff := make([]byte, blockSize) // Creating an output buffer
+	C.oram_get(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&buff[0])), C.size_t(blockSize)) // Getting the requested value from the ORAM
+	
+	return buff // Returning the output object
 }
 
 func (o *ORAM) ORAM_Set(id uint64, data []byte) { // ORAM setter function
-	if len(data) == 0 { // If we cannot, we will not even try
+	// Memory safety checks
+	if o.ptr == nil || len(data) == 0 { // If we cannot, we will not even try
 		return
 	}
+	
+	// Trivial padding to the next power of four for memory safety reasons
+	padding := (4 - (len(data) % 4)) % 4 // Using modolus for trivial padding math
+	padded := append(data, make([]byte, padding)...) // Padding our the data
 
-	C.oram_set(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&data[0])), C.size_t(len(data))) // Setting the request value to the ORAM
+	C.oram_set(o.ptr, C.uint64_t(id), (*C.uint8_t)(unsafe.Pointer(&padded[0])), C.size_t(len(padded))) // Setting the request value to the ORAM
 }
 
 func (o *ORAM) ORAM_Delete(id uint64, blockSize uint32) { // ORAM deletion function
+	if o.ptr == nil { // Memory safety check
+		return
+	}
+
 	C.oram_delete(o.ptr, C.uint64_t(id), C.uint32_t(blockSize)) // Writing an empty value to the requested entry from the ORAM
 }

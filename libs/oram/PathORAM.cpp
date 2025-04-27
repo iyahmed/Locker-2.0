@@ -19,7 +19,7 @@ class ORAMClass : public OramInterface {
     public:
         ORAMClass(int log_capacity, int block_size_bytes, int z) { // Defining the constructor class
             num_blocks = 1 << log_capacity; // Fitting as much as we can, 2^log - 1
-            block_size = block_size_bytes / sizeof(int); // Defining the number of integers per block
+            block_size = Block::BLOCK_SIZE; // Defining the number of integers per block
 
             for (int i = 0; i < num_blocks; ++i) { // Initalizing the blocks as blanks into storage
                 Block blk;
@@ -106,7 +106,7 @@ extern "C" { // Supporting construction, destruction, and the CURD (Create, Upda
     void oram_set(void *oram, uint64_t id, const uint8_t *in_data, size_t data_len) { // ORAM setter and update function
         // Data structures
         ORAM *oram_ptr = static_cast<ORAM*>(oram); // Creating the ORAM object's pointer
-        int *buffer = new int[data_len / sizeof(int)]; // Creating the empty buffer, to be filled later
+        int *buffer = new int[(data_len + sizeof(int) - 1) / sizeof(int)](); // Creating the empty buffer, to be filled later
         
         // Set operation
         std::memcpy(buffer, in_data, data_len); // Inputting onto in_data
@@ -117,7 +117,7 @@ extern "C" { // Supporting construction, destruction, and the CURD (Create, Upda
     void oram_delete(void *oram, uint64_t id, uint32_t block_size) { // ORAM deletion function
         // Data structures
         ORAM *oram_ptr = static_cast<ORAM*>(oram); // Creating the ORAM object's pointer
-        int *buffer = new int[block_size / sizeof(int)](); // Creating the empty buffer, never to be filled
+        int *buffer = new int[(block_size + sizeof(int) - 1) / sizeof(int)](); // Creating the empty buffer, never to be filled
         
         // Delete operation
         oram_ptr->access(ORAM::WRITE, static_cast<int>(id), buffer); // Writing to the ORAM
