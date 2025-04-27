@@ -12,6 +12,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"bytes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"locker/libs/oram"
 )
@@ -123,7 +124,11 @@ func main() {
 	
 	// Test 2: Read "Hello, World!" from index 1
 	resultOne := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne)) // Printing out the message at index 1
+	resultOneLen := bytes.IndexByte(resultOne, 0) // Cutting off the garbage characters at the end
+	if resultOneLen == -1 { // Handling the case where all bytes are used
+		resultOneLen = len(resultOne)
+	}
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultOne[:resultOneLen])) // Printing out the message at index 1
 	
 	// Test 3: Update "Hello, World!" at index 1 to be "Bonjour, Monde!"
 	dataTwo := []byte("Bonjour, Monde!") // An example of a message that we want to keep hidden
@@ -131,7 +136,11 @@ func main() {
 
 	// Test 4: Read "Bonjour, Monde!" from index 1
 	resultTwo := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultTwo)) // Printing out the message at index 1
+	resultTwoLen := bytes.IndexByte(resultTwo, 0) // Cutting off the garbage characters at the end
+	if resultTwoLen == -1 { // Handling the case where all bytes are used
+		resultTwoLen = len(resultTwo)
+	}
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultTwo[:resultTwoLen])) // Printing out the message at index 1
 
 	// Test 5: Insert "Hello, World!" at index 2
 	dataThree := []byte("Hello, World!") // An example of a message that we want to keep hidden
@@ -139,17 +148,33 @@ func main() {
 	
 	// Test 6: Read "Hello, World!" from index 1 and "Bonjour, Monde!" from index 2
 	resultThree := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultThree)) // Printing out the message at index 1
+	resultThreeLen := bytes.IndexByte(resultThree, 0) // Cutting off the garbage characters at the end
+	if resultThreeLen == -1 { // Handling the case where all bytes are used
+		resultThreeLen = len(resultThree)
+	}
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultThree[:resultThreeLen])) // Printing out the message at index 1
 	resultFour := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
-	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultFour)) // Printing out the message at index 2
+	resultFourLen := bytes.IndexByte(resultFour, 0) // Cutting off the garbage characters at the end
+	if resultFourLen == -1 { // Handling the case where all bytes are used
+		resultFourLen = len(resultFour)
+	}
+	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultFour[:resultFourLen])) // Printing out the message at index 2
 
 	// Test 7: Destroy "Bonjour, Monde!" from index 2
 	o.ORAM_Delete(2, blockSize) // Deleting the hidden message in index 2
 
 	// Test 8: Read "Hello, World!" from index 1 and NIL from index 2
 	resultFive := o.ORAM_Get(1, int(blockSize)) // Retrieving the hidden message in index 1
-	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive)) // Printing out the message at index 1
+	resultFiveLen := bytes.IndexByte(resultFive, 0) // Cutting off the garbage characters at the end
+	if resultFiveLen == -1 { // Handling the case where all bytes are used
+		resultFiveLen = len(resultFive)
+	}
+	fmt.Println("Retrieved from the ORAM at index 1: ", string(resultFive[:resultFiveLen])) // Printing out the message at index 1
 	resultSix := o.ORAM_Get(2, int(blockSize)) // Retrieving the hidden message in index 2
+	resultSixLen := bytes.IndexByte(resultSix, 0) // Cutting off the garbage characters at the end
+	if resultSixLen == -1 { // Handling the case where all bytes are used
+		resultSixLen = len(resultOne[:resultSixLen])
+	}
 	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix)) // Printing out the message at index 2
 	
 	// Command-line flags, with default values and changeable by the client
