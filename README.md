@@ -4,7 +4,7 @@
 
 ### Locker 2.0 (Current)
 
-The new Locker 2.0 is an extension of "Locker" for CSE 247B in the Spring Quarter of 2025 as a Master's Capstone Project for Ismail Ahmed, that is supposed to ensure truly secure communication between a trusted etcd client and an untrusted honest-but-curious etcd server by encrypting all client data and obscuring all client data access patterns from the server. It is an implementation of the "Encrypted Multi-map that Hides Query, Access, and Volume Patterns" research paper by Alexandra Boldyreva of the Georgia Institute of Technology and Tianxin Tang of the Eindhoven University of Technology. It uses a generic oblivious memory (ORAM) data structure and a generic oblivious dictionary (OMAP) data structure, which will be PathORAM and vORAM+HIRB, as described in the "Path ORAM: An Extremely Simple Oblivious RAM Protocol" and the "Practical Oblivious Map Data Structure with Secure Deletion and History Independence" research papers. The ORAM data structure implementation is a modified and compilfer `obliviousram/PathORAM` that is statically linked and has a block size of 64 bytes. The 64 byte block size, defined in `Block.h`, is chosen to allow for messages up to 64 bytes to be stored in a single block, which is large enough for short messages to be entirely contained and small enough to preserve obliviousness. Then, the ORAM will be used as a component of the OMAP that itself will be used as a secure memory access black-box to enable the implementation of an secure and encrypted mini-map (EMM) network protocol that secures all communication between a trusted client and a honest-but-curious server. Locker 2.0 can work for both a plaintext default etcd server (although that would defeat the purpose of Locker 2.0) as well as an encrypted custom etcd server using third-party libraries and software. Locker 2.0 requires a modern Linux server with Bash, Go, common GNU Linux tools, and to be ran on a 64-bit computer. It is designed to be used in cases where there needs to be extremely secret client-server communication with the inevitable cost of performance. There is a caveat of all single-value JSON responses being returned as strings but all multiple-value JSON responses being lists and another caveat of read JSON requests not using the "val" field. There is extensive and rigorous testing and benchmarking available, which is stored in `execs/`. The goal of Locker 2.0 is to enable free and open-source (FOSS) drop-in secure communication for services using etcd, with support for any type of etcd client-server communication (local, Docker, or Internet).
+The new Locker 2.0 is an extension of "Locker" for CSE 247B in the Spring Quarter of 2025 as a Master's Capstone Project for Ismail Ahmed, that is supposed to ensure truly secure communication between a trusted etcd client and an untrusted honest-but-curious etcd server by encrypting all client data and obscuring all client data access patterns from the server. It is an implementation of the "Encrypted Multi-map that Hides Query, Access, and Volume Patterns" research paper by Alexandra Boldyreva of the Georgia Institute of Technology and Tianxin Tang of the Eindhoven University of Technology. It uses a generic oblivious memory (ORAM) data structure and a generic oblivious dictionary (OMAP) data structure, which will be PathORAM and vORAM+HIRB, as described in the "Path ORAM: An Extremely Simple Oblivious RAM Protocol" and the "Practical Oblivious Map Data Structure with Secure Deletion and History Independence" research papers. The ORAM data structure implementation is a modified and compilied `obliviousram/PathORAM` library that is statically linked and has a block size of 64 bytes. The 64 byte block size, defined in `Block.h`, is chosen to allow for messages up to 64 bytes to be stored in a single block, which is large enough for short messages to be entirely contained and small enough to preserve obliviousness. Then, the ORAM will be used as a component of the OMAP, which is a modfified and interpeted `dsroche/obliv` library (built using `pip install -e .[dev]` and tests are ran using `tox` for the Python 3.12 enviroment because `pycryptodome` does not support Python 3.12 currently), that itself will be used as a secure memory access black-box to enable the implementation of an secure and encrypted mini-map (EMM) network protocol/data structure that secures all communication between a trusted client and a malicious server. Locker 2.0 can work for both a plaintext default etcd server as well as an encrypted custom etcd server using third-party libraries and software. Locker 2.0 requires a modern Linux server with Bash, Go, common GNU Linux tools (as defined as everything needed to compile and run all libraries, as per the instructions of each library's repository), and to be ran on a 64-bit computer. It is designed to be used in cases where there needs to be extremely secret client-server communication with the inevitable cost of performance. There is a caveat of all single-value JSON responses being returned as strings but all multiple-value JSON responses being lists and another caveat of read JSON requests not using the "val" field. There is extensive and rigorous testing and benchmarking available, which is stored in `execs/`. The goal of Locker 2.0 is to enable free and open-source (FOSS) drop-in secure communication for services using etcd, with support for any type of etcd client-server communication (local, Docker, or Internet).
 
 ### Original Locker (Outdated)
 
@@ -43,15 +43,14 @@ go mod tidy
 ### Installing the Locker 2.0 Dependencies (PathORAM)
 
 ```bash
-cd libs
+cd libs/oram
 chmod +x build.sh
-./build.sh
+bash build.sh
 ```
 
-### Starting the server and proxy
+### Starting the server and proxy (locally, for testing purposes)
 
-First Terminal Session:
-NOTE: Must be using Version 3.5 (latest) of etcd or a version that supports the v3 API.
+First Terminal Session (Must be using Version 3.5 (latest) of etcd or a version that supports the v3 API.):
 
 ```bash
 etcd
@@ -87,16 +86,16 @@ sudo chmod +x init.sh
 sudo chmod +x benchmark.sh
 ```
 
-Then, we initialize the database with the chosen key text file and the number of values to input (defaults to the entire file):
+Then, we initialize the database with the chosen key text file and the number of values to input (defaults to the entire input file):
 
 ```bash
-./init.sh <small_keys.txt | medium_keys.txt | large_keys.txt> <MAX_VALUES>
+bash init.sh <small_keys.txt | medium_keys.txt | large_keys.txt> <MAX_VALUES>
 ```
 
 Lastly, we run the benchmark, which is ran with either `secure.go` or `plaintext.go` (defaults to 10 users):
 
 ```bash
-./benchmark.sh  -n <NUM_REQUESTS> -b <MAX_BATCH_SIZE> -v <MAX_VALUE_SIZE> -r <READ_PERCENTAGE>
+bash benchmark.sh  -n <NUM_REQUESTS> -b <MAX_BATCH_SIZE> -v <MAX_VALUE_SIZE> -r <READ_PERCENTAGE>
 ```
 
 To compare the performance with and without security, swap the `secure.go` and `plaintext.go` files in the `Locker-2.0/` main folder.
@@ -119,4 +118,4 @@ curl -s -X POST http://localhost:5000   -H "Content-Type: application/json"   -d
 
 ## License
 
-Locker © 2025 by Sallar Farokhi, Ismail Ahmed is licensed under Creative Commons Attribution 4.0 International
+Locker 2.0 © 2025 by Ismail Ahmed and Sallar Farokhi is licensed under Creative Commons Attribution 4.0 International
