@@ -15,6 +15,7 @@ import (
 	"bytes"
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"locker/libs/oram"
+	"locker/libs/hirb"
 )
 
 
@@ -110,6 +111,75 @@ func handleRequests(requests []Request, etcdClient *clientv3.Client) map[string]
 	return result
 }
 
+// The HIRB testing function
+func testHIRB() {
+	// Checking if the HIRB tree behaves like an oblivious map/dictionary with CRUD (Create, Read, Update, and Destroy) Operations
+	keyOne := "English"
+	keyTwo := "French"
+	valOne := "Hello, World!"
+	valTwo := "Bonjour, Monde!"
+
+	// Test 1: Writing the key-value pair "(English, Hello, World!)"
+	fmt.Printf("\nTest 1: Writing the key-value pair (English, Hello, World!)\n")
+	if err := hirb.Set(keyOne, valOne); err != nil {
+		fmt.Printf("HIRB Set failed: %v\n", err)
+	}
+
+	// Test 2: Reading the value "Hello, World!" given the key "English"
+	fmt.Printf("\nTest 2: Reading the value 'Hello, World!'' given the key 'English'\n")
+	res, err := hirb.Get(keyOne)
+	if err != nil {
+		fmt.Printf("HIRB Get failed: %v\n", err)
+	} else {
+		fmt.Printf("HIRB Retrieved value: %v\n", res)
+	}
+
+	// Test 3: Deleting the key-value pair "(English, Hello, World!)"
+	fmt.Printf("\nTest 3: Deleting the key-value pair '(English, Hello, World!)'\n")
+	if err := hirb.Delete(keyOne); err != nil {
+		fmt.Printf("HIRB Delete failed: %v\n", err)
+	}
+
+	// Test 4: Reading the now nonexistent key-value pair "(English, Hello, World!)"
+	fmt.Printf("\nTest 4: Reading the now nonexistent key-value pair '(English, Hello, World!)'\n")
+	res, err = hirb.Get(keyOne)
+	if err != nil {
+		fmt.Printf("HIRB Delete succeeded: %v\n", err)
+	} else {
+		fmt.Printf("HIRB Delete failed: %v\n", res)
+	}
+
+	// Test 5: Writing the value "Bonjour, Monde!" given the key "French"
+	fmt.Printf("\nTest 5: Writing the value 'Bonjour, Monde!' given the key 'French'\n")
+	if err := hirb.Set(keyTwo, valTwo); err != nil {
+		fmt.Printf("HIRB Set failed: %v\n", err)
+	}
+
+	// Test 6: Writing the value "Hello, World!" given the key "English"
+	fmt.Printf("\nTest 6: Writing the value 'Hello, World!' given the key 'English'\n")
+	if err := hirb.Set(keyOne, valOne); err != nil {
+		fmt.Printf("HIRB Set failed: %v\n", err)
+	}
+
+	// Test 7: Reading the value "Hello, World!" given the key "English"
+	fmt.Printf("\nTest 7: Reading the value 'Hello, World!' given the key 'English'\n")
+	res, err = hirb.Get(keyOne)
+	if err != nil {
+		fmt.Printf("HIRB Get failed: %v\n", err)
+	} else {
+		fmt.Printf("HIRB Retrieved value: %v\n", res)
+	}
+
+	// Test 8: Reading the value "Bonjour, Monde!" given the key "French"
+	fmt.Printf("\nTest 7: Reading the value 'Bonjour, Monde!' given the key 'French'\n")
+	res, err = hirb.Get(keyTwo)
+	if err != nil {
+		log.Printf("HIRB Get failed: %v\n", err)
+	} else {
+		log.Printf("HIRB Retrieved value: %v\n", res)
+	}
+}
+
 func main() {
 	// TODO: PathORAM data structure tests
 	// ORAM constructor and destruction
@@ -176,7 +246,9 @@ func main() {
 		resultSixLen = len(resultOne[:resultSixLen])
 	}
 	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix)) // Printing out the message at index 2
-	
+
+	testHIRB() // Calling the testHIRB() function in one line
+
 	// Command-line flags, with default values and changeable by the client
 	apiPort := flag.Int("api-port", 5000, "Listening port for the client's Locker API server (By default, 5000)")
 	etcdPort := flag.String("etcd-endpoint", "http://localhost:2379", "Listening port for the server's etcd API server (By default, http://localhost:2379)")
