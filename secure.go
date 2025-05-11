@@ -16,6 +16,7 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 	"locker/libs/oram"
 	"locker/libs/hirb"
+	"locker/libs/emm"
 )
 
 
@@ -180,14 +181,86 @@ func testHIRB() {
 	}
 }
 
+// // The EMM constructor function
+// func initEMM() {
+// 	emm.InitServer()
+// 	defer emm.ShutdownServer()
+// 	http.HandleFunc("/", emm.jsonHandler)
+
+// 	log.Println("EMM server is running on http://localhost:8245")
+// 	log.Fatal(http.ListenAndServe(":8245", nil))
+// }
+
+// The EMM testing function
+func testEMM() {
+	keyOne   := "username"
+	keyTwo   := "password"
+	valOne   := "Alice"
+	valTwo   := "MyHiddenPassword"
+	valThree := "MySecretPassword"
+
+	// EMM CRUD (Create, Read, Update, and Destroy) Operations
+	
+	// Test 1: Writing the pair "(username, Alice)"
+	fmt.Println("\nTest 1: Writing the pair '(username, Alice)'\n")
+	if err := emm.Set(keyOne, valOne); err != nil {
+		fmt.Printf("EMM Set failed: %v\n", err)
+	}
+
+	// Test 2: Writing the pair "(password, MyHiddenPassword)"
+	fmt.Println("\nTest 2: Writing the pair '(password, MyHiddenPassword)'\n")
+	if err := emm.Set(keyTwo, valTwo); err != nil {
+		fmt.Printf("EMM Set failed: %v\n", err)
+	}
+
+	// Test 3: Reading the value "Alice" given the key "username"
+	fmt.Println("\nTest 3: Reading the value 'Alice' given the key 'username'\n")
+	res1, err := emm.Get(keyOne)
+	if err != nil {
+		fmt.Printf("EMM Get failed: %v\n", err)
+	} else {
+		fmt.Printf("EMM Retrieved value: %v\n", res1)
+	}
+
+	// Test 4: Updating the pair "(password, MySecretPassword)"
+	fmt.Println("\nTest 4: Updating the pair '(password, MySecretPassword)'\n")
+	if err := emm.Set(keyTwo, valThree); err != nil {
+		fmt.Printf("EMM Set failed: %v\n", err)
+	}
+
+	// Test 5: Reading the value "MySecretPassword" given the key "password"
+	fmt.Println("\nTest 5: Reading the value 'MySecretPassword' given the key 'password'\n")
+	res2, err := emm.Get(keyTwo)
+	if err != nil {
+		fmt.Printf("EMM Get failed: %v\n", err)
+	} else {
+		fmt.Printf("EMM Retrieved value: %v\n", res2)
+	}
+
+	// Test 6: Deleting the pair "(password, MySecretPassword)"
+	fmt.Println("\nTest 6: Deleting the pair '(password, MySecretPassword)'\n")
+	if err := emm.Delete(keyTwo); err != nil {
+		fmt.Printf("EMM Delete failed: %v\n", err)
+	}
+
+	// Test 7: Reading the value NIL given the key "password"
+	fmt.Println("\nTest 7: Reading the value NIL given the key 'password'\n")
+	res3, err := emm.Get(keyTwo)
+	if err != nil {
+		fmt.Printf("EMM Get failed: %v\n", err)
+	} else {
+		fmt.Printf("EMM Retrieved value (should be NIL): %v\n", res3)
+	}
+}
+
 func main() {
-	// TODO: PathORAM data structure tests
 	// ORAM constructor and destruction
 	blockSize, logCap, z := uint32(32), uint32(5), uint32(3) // By descending order
 	o := oram.ORAM_Init(logCap, blockSize, z) // Constructing the PathORAM Go object
 	defer o.ORAM_Destruct() // For memory safety, destructing the object after we are done using it
 
 	// ORAM CRUD (Create, Read, Update, and Destroy) Operations
+	
 	// Test 1: Insert "Hello, World!" at index 1
 	dataOne := []byte("Hello, World!") // An example of a message that we want to keep hidden
 	o.ORAM_Set(1, dataOne) // Putting the first hidden message in index 1
@@ -248,6 +321,16 @@ func main() {
 	fmt.Println("Retrieved from the ORAM at index 2: ", string(resultSix)) // Printing out the message at index 2
 
 	testHIRB() // Calling the testHIRB() function in one line
+	// initEMM() // Calling the initEMM() function in one line
+	emm.InitServer()
+	defer emm.ShutdownServer()
+	http.HandleFunc("/", emm.HandleEMMRequest)
+	go func() { // Using Go's goroutines to run the EMM's HTTP server in the background to allow for the tests to run
+		log.Println("EMM server is running on http://localhost:8245")
+		log.Fatal(http.ListenAndServe(":8245", nil))
+	}()
+	testEMM() // Calling the testEMM() function in one line
+	time.Sleep(1 * time.Second) // 1-second sleep call to finish all async operations
 
 	// Command-line flags, with default values and changeable by the client
 	apiPort := flag.Int("api-port", 5000, "Listening port for the client's Locker API server (By default, 5000)")
