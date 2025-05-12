@@ -324,7 +324,7 @@ func main() {
 	// initEMM() // Calling the initEMM() function in one line
 	emm.InitServer()
 	defer emm.ShutdownServer()
-	http.HandleFunc("/", emm.HandleEMMRequest)
+	http.HandleFunc("/emm", emm.HandleEMMRequest)
 	go func() { // Using Go's goroutines to run the EMM's HTTP server in the background to allow for the tests to run
 		log.Println("EMM server is running on http://localhost:8245")
 		log.Fatal(http.ListenAndServe(":8245", nil))
@@ -338,7 +338,7 @@ func main() {
 	flag.Parse()
 	apiAddr := fmt.Sprintf(":%d", *apiPort) // Reading the API port as an Integer and converting it into a String
 	
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) { // Set up an HTTP server
+	http.HandleFunc("/etcd", func(w http.ResponseWriter, r *http.Request) { // Set up an HTTP server
 		var requests []Request
 		if err := json.NewDecoder(r.Body).Decode(&requests); err != nil { // Handling HTTP errors
 			http.Error(w, err.Error(), http.StatusBadRequest)

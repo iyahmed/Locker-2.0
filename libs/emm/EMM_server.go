@@ -25,7 +25,7 @@ import (
 type Response struct {
 	Result interface{} `json:"result"`
 }
-type RequestServerSide struct {
+type Request struct {
 	Op  string      `json:"op"`
 	Key string      `json:"key"`
 	Val interface{} `json:"val,omitempty"`
@@ -146,10 +146,10 @@ func getOrCreateIndex(key string) (uint64, error) {
 // Handling all HTTP requests in JSON format
 func HandleEMMRequest(w http.ResponseWriter, r *http.Request) {
 	// Receiving JSON requests
-	var req RequestServerSide
+	var req Request
 	body, err := io.ReadAll(r.Body)
 	if err != nil || json.Unmarshal(body, &req) != nil {
-		http.Error(w, "HTTP ERROR 500: Invalid request: ", http.StatusBadRequest)
+		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
 
@@ -157,53 +157,115 @@ func HandleEMMRequest(w http.ResponseWriter, r *http.Request) {
 	key := req.Key
 	idx, err := getOrCreateIndex(key)
 	if err != nil {
-		http.Error(w, "HTTP ERROR 500: The HIRB has failed: " + err.Error(), http.StatusInternalServerError)
+		http.Error(w, "HIRB failure: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Switch-case statement to handle all legal operations (GET/Read, SET/Write, DEL/Remove)
 	// NOTE: The PUT/Update operation is unneeded because a working SET should always find the given index that it needs to PUT/Update
 	switch req.Op {
-		case "get":
-			// Handling the GET case, where we must obliviously fetch a value from the ORAM
-			ciphertext := oramStore.ORAM_Get(idx, int(blockSize))
-			end := bytes.IndexByte(ciphertext, 0)
-			if end == -1 { // Handling the corner case
-				end = len(ciphertext)
-			}
-			plaintext, err := decrypt(ciphertext[:end])
-			if err != nil { // If we cannot decrypt, we must return NIL to the client
-				json.NewEncoder(w).Encode(Response{Result: nil})
-				return
-			}
-			var decoded interface{}
-			if err := json.Unmarshal(plaintext, &decoded); err != nil { // If we cannot decrypt, we must return NIL to the client
-				json.NewEncoder(w).Encode(Response{Result: nil})
-				return
-			}
-			json.NewEncoder(w).Encode(Response{Result: decoded})
-		case "set":
-			// Handling the SET case, where we must obliviously write a value to the ORAM
-			raw, err := json.Marshal(req.Val)
-			if err != nil {
-				http.Error(w, "HTTP ERROR 500: Marshal error: ", http.StatusInternalServerError)
-				return
-			}
-			ciphertext, err := encrypt(raw)
-			if err != nil {
-				http.Error(w, "HTTP ERROR 500: Encryption error: ", http.StatusInternalServerError)
-				return
-			}
-			oramStore.ORAM_Set(idx, ciphertext)
-			json.NewEncoder(w).Encode(Response{Result: "OK"})
-		case "del":
-			// Handling the DEL case, where we must obliviously delete a value from the ORAM
-			oramStore.ORAM_Delete(idx, blockSize)
-			json.NewEncoder(w).Encode(Response{Result: "Deleted the chosen data as requested"})
-		default:
-			// Handling all unsupported operations
-			http.Error(w, "HTTP 404: REQUESTED OPERATION NOT FOUND (VALID ONES ARE \"SET\", \"GET\", AND \"DEL\")", http.StatusBadRequest)
+	case "set":
+		// Handling the SET case, where we must obliviously write a value to the ORAM
+		raw, err := json.Marshal(req.Val)
+		if err != nil {
+			http.Error(w, "Marshal error", http.StatusInternalServerError)
+			return
+		}
+		ciphertext, err := encrypt(raw)
+		if err != nil {
+			http.Error(w, "Encryption failed", http.StatusInternalServerError)
+			return
+		}
+		oramStore.ORAM_Set(idx, ciphertext)
+		json.NewEncoder(w).Encode(Response{Result: "ok"})
+
+	case "get":
+		// Handling the GET case, where we must obliviously fetch a value from the ORAM
+		ciphertext := oramStore.ORAM_Get(idx, int(blockSize))
+		end := bytes.IndexByte(ciphertext, 0)
+		if end == -1 {
+			end = len(ciphertext)
+		}
+		plaintext, err := decrypt(ciphertext[:end])
+		if err != nil {
+			json.NewEncoder(w).Encode(Response{Result: nil})
+			return
+		}
+		var decoded interface{}
+		if err := json.Unmarshal(plaintext, &decoded); err != nil {
+			json.NewEncoder(w).Encode(Response{Result: nil})
+			return
+		}
+		json.NewEncoder(w).Encode(Response{Result: decoded})
+
+	case "del":
+		// Handling the DEL case, where we must obliviously delete a value from the ORAM
+		oramStore.ORAM_Delete(idx, blockSize)
+		json.NewEncoder(w).Encode(Response{Result: "deleted"})
+
+	default:
+		// Handling all unsupported operations
+		http.Error(w, "Unsupported operation", http.StatusBadRequest)
 	}
+	// // Receiving JSON requests
+	// var req RequestServerSide
+	// body, err := io.ReadAll(r.Body)
+	// if err != nil || json.Unmarshal(body, &req) != nil {
+	// 	http.Error(w, "HTTP ERROR 500: Invalid request: ", http.StatusBadRequest)
+	// 	return
+	// }
+
+	// // Creating the relevant key's HIRB index
+	// key := req.Key
+	// idx, err := getOrCreateIndex(key)
+	// if err != nil {
+	// 	http.Error(w, "HTTP ERROR 500: The HIRB has failed: " + err.Error(), http.StatusInternalServerError)
+	// 	return
+	// }
+
+	// // Switch-case statement to handle all legal operations (GET/Read, SET/Write, DEL/Remove)
+	// // NOTE: The PUT/Update operation is unneeded because a working SET should always find the given index that it needs to PUT/Update
+	// switch req.Op {
+	// 	case "get":
+	// 		// Handling the GET case, where we must obliviously fetch a value from the ORAM
+	// 		ciphertext := oramStore.ORAM_Get(idx, int(blockSize))
+	// 		end := bytes.IndexByte(ciphertext, 0)
+	// 		if end == -1 { // Handling the corner case
+	// 			end = len(ciphertext)
+	// 		}
+	// 		plaintext, err := decrypt(ciphertext[:end])
+	// 		if err != nil { // If we cannot decrypt, we must return NIL to the client
+	// 			json.NewEncoder(w).Encode(Response{Result: nil})
+	// 			return
+	// 		}
+	// 		var decoded interface{}
+	// 		if err := json.Unmarshal(plaintext, &decoded); err != nil { // If we cannot decrypt, we must return NIL to the client
+	// 			json.NewEncoder(w).Encode(Response{Result: nil})
+	// 			return
+	// 		}
+	// 		json.NewEncoder(w).Encode(Response{Result: decoded})
+	// 	case "set":
+	// 		// Handling the SET case, where we must obliviously write a value to the ORAM
+	// 		raw, err := json.Marshal(req.Val)
+	// 		if err != nil {
+	// 			http.Error(w, "HTTP ERROR 500: Marshal error: ", http.StatusInternalServerError)
+	// 			return
+	// 		}
+	// 		ciphertext, err := encrypt(raw)
+	// 		if err != nil {
+	// 			http.Error(w, "HTTP ERROR 500: Encryption error: ", http.StatusInternalServerError)
+	// 			return
+	// 		}
+	// 		oramStore.ORAM_Set(idx, ciphertext)
+	// 		json.NewEncoder(w).Encode(Response{Result: "OK"})
+	// 	case "del":
+	// 		// Handling the DEL case, where we must obliviously delete a value from the ORAM
+	// 		oramStore.ORAM_Delete(idx, blockSize)
+	// 		json.NewEncoder(w).Encode(Response{Result: "Deleted the chosen data as requested"})
+	// 	default:
+	// 		// Handling all unsupported operations
+	// 		http.Error(w, "HTTP 404: REQUESTED OPERATION NOT FOUND (VALID ONES ARE \"SET\", \"GET\", AND \"DEL\")", http.StatusBadRequest)
+	// }
 }
 
 // func main() {
