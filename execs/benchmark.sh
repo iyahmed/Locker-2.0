@@ -69,7 +69,8 @@ USERS=("user1" "user2" "user3" "user4" "user5" "user6" "user7" "user8" "user9" "
 WRITTEN_KEYS=()
 
 # Target URL
-URL="http://localhost:5000"
+# URL="http://localhost:5000"
+URL="http://localhost:5000/etcd"
 
 # Clear data file at the start
 echo "Benchmark data log" > benchmark_data.txt
