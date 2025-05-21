@@ -12,13 +12,29 @@ BATCH_SIZE=3                     # Size of a batch
 MAX_VAL_SIZE=3                   # Maximum value size in bytes
 READ_PERCENTAGE=50               # 50% reads and 50% writes by default
 NUM_WARMUP_BATCHES=3             # Number of warm-up batches used
+KEY_FILE="large_keys.txt"        # Default file where keys are stored
 # URL="http://localhost:5000"    # The plaintext etcd client's URL
 URL="http://localhost:5000/etcd" # The secure etcd client's URL
 
 # User and key information
 USERS=("user1" "user2" "user3" "user4" "user5" "user6" "user7" "user8" "user9" "user10")    # There are 10 users
-DEFAULT_KEYS=("alpha" "beta" "gamma" "delta" "epsilon" "zeta" "eta" "theta" "iota" "kappa") # There are 10 default keys, with one key per user
 WRITTEN_KEYS=()                                                                             # Storing all written keys for future reads
+# Getting the keys from either the given key file or by some hardcoded back-up keys
+KEYS=()
+# Attempting to read from the given key file, if it is there
+if [[ -f "$KEY_FILE" ]]; then
+  while IFS= read -r line; do
+    [[ -n "$line" ]] && KEYS+=("$line")
+  done < "$KEY_FILE"
+else
+  echo "ERROR: The given key file '$KEY_FILE' is not found."
+  exit 1
+fi
+# Checking if we can read from the given key file
+if [ "${#KEYS[@]}" -eq 0 ]; then
+  echo "ERROR: There are no valid keys found in $KEY_FILE"
+  exit 1
+fi
 
 # Processing command line arguments
 while [[ $# -gt 0 ]]; do
@@ -43,6 +59,10 @@ while [[ $# -gt 0 ]]; do
       READ_PERCENTAGE="$2"
       shift 2
       ;;
+    -k|--key-file)
+      KEY_FILE="$2"
+      shift 2
+      ;;
     -h|--help)
       echo "Usage: $0 [options]"
       echo "Options:"
@@ -51,6 +71,7 @@ while [[ $# -gt 0 ]]; do
       echo "  -v, --val-size MAX          Maximum value size in bytes (default: 3)"
       echo "  -w, --warmup-batches NUM    Number of warm-up batches used (default: 5)"
       echo "  -r, --read-percentage PCT   Percentage of read operations (default: 50)"
+      echo "  -k, --key-file FILE         Path to the file where the keys are stored (default: large_keys.txt in the same folder as this benchmark.sh)"
       echo "  -h, --help                  Show this help message"
       exit 0
       ;;
@@ -71,6 +92,7 @@ fi
 # Clearing the benchmark data file at the start
 echo "Benchmark data log" > benchmark_data.txt
 
+
 # Warm-up Phase: Mixing reads and writes
 for ((i=1; i<=NUM_WARMUP_BATCHES; i++)); do
   echo -e "\n======= First Phase: Warm-up Request $i =======" >> benchmark_data.txt
@@ -82,8 +104,9 @@ for ((i=1; i<=NUM_WARMUP_BATCHES; i++)); do
             KEY=${WRITTEN_KEYS[$RANDOM % ${#WRITTEN_KEYS[@]}]}
         else
             OP="write"
-            KEY=${DEFAULT_KEYS[$RANDOM % ${#DEFAULT_KEYS[@]}]}
+            KEY=${KEYS[$RANDOM % ${#KEYS[@]}]}
             WRITTEN_KEYS+=("$KEY")
+            # echo "DEBUG: Selected key for write: $KEY" # Debugging print statement
         fi
         USER=${USERS[$RANDOM % ${#USERS[@]}]}
         VAL=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c $MAX_VAL_SIZE | base64)
@@ -99,7 +122,8 @@ for ((i=1; i<=NUM_WARMUP_BATCHES; i++)); do
     echo "Response: $RESPONSE" >> benchmark_data.txt
 done
 
-# Delete phase: Deleting around half of the written keys
+
+# Delete Phase: Deleting around half of the written keys
 echo -e "\n======= Second Phase: Delete Request =======" >> benchmark_data.txt
 DATA="["
 DELETE_KEYS=("${WRITTEN_KEYS[@]:0:${#WRITTEN_KEYS[@]}/2}")
@@ -116,7 +140,8 @@ echo "Data: $DATA" >> benchmark_data.txt
 RESPONSE=$(curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$DATA")
 echo "Response: $RESPONSE" >> benchmark_data.txt
 
-# Final read-only phase: verify all keys
+
+# Read Verification Phase: Verifying all the keys that could be read
 echo -e "\n======= Third Phase: Final Read Verification =======" >> benchmark_data.txt
 DATA="["
 ALL_KEYS=($(printf "%s\n" "${WRITTEN_KEYS[@]}" | sort -u))
@@ -145,7 +170,7 @@ echo "Response: $RESPONSE" >> benchmark_data.txt
 #   echo "Error: large_keys.txt is empty or missing"
 #   exit 1
 # fi
-# 
+
 # for ((i=1; i<=NUM_REQUESTS; i++)); do
 #     # Generate the JSON array for the batch
 #     DATA="["
@@ -164,7 +189,7 @@ echo "Response: $RESPONSE" >> benchmark_data.txt
         
 #         # Generate random user
 #         USER=${USERS[$RANDOM % ${#USERS[@]}]}
-        
+
 #         # Generate random value (only needed for writes, but generate anyway)
 #         VAL_SIZE=$((1 + RANDOM % MAX_VAL_SIZE))
 #         VAL=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c $VAL_SIZE | base64)
@@ -192,6 +217,8 @@ echo "Response: $RESPONSE" >> benchmark_data.txt
 #     echo "Response: $RESPONSE" >> benchmark_data.txt
 #     echo "Request $i sent with batch size: $BATCH_SIZE"
 # done
+
+
 
 # Performance benchmarking in seconds
 end=$(date +%s.%N)

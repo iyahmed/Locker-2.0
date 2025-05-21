@@ -2,8 +2,7 @@
 MAX_VAL_SIZE=3          # Maximum value size in bytes
 BATCH_SIZE=100          # Number of key-value pairs to batch in one request
 
-# Function to display progress bar
-show_progress() {
+show_progress() { # This is a function to display a progress bar
     local current=$1
     local total=$2
     local width=50
@@ -14,7 +13,7 @@ show_progress() {
     printf " %d%% (%d/%d)" "$percentage" "$current" "$total"
 }
 
-# Check if filename was provided
+# Checking if filename was provided
 if [ $# -lt 1 ]; then
     echo "Usage: $0 <keys_filename> [max_values]"
     exit 1
@@ -22,42 +21,42 @@ fi
 
 KEYS_FILE="$1"
 
-# Check if file exists
+# Checking if file exists
 if [ ! -f "$KEYS_FILE" ]; then
     echo "Error: File '$KEYS_FILE' not found"
     exit 1
 fi
 
-# Read keys from file, ensuring no empty lines
+# Reading the keys from file, ensuring no empty lines
 KEYS=()
 while IFS= read -r line || [[ -n "$line" ]]; do
     KEYS+=("$line")
 done < "$KEYS_FILE"
 
-# Set MAX_UPLOADED_VALUES based on command line argument or default to all keys
+# Setting the MAX_UPLOADED_VALUES value based on the given command line argument or defaulting to all keys
 if [ $# -ge 2 ] && [[ "$2" =~ ^[0-9]+$ ]]; then
     MAX_UPLOADED_VALUES=$2
 else
     MAX_UPLOADED_VALUES=${#KEYS[@]}
 fi
 
-# Make sure we don't try to upload more keys than we have
+# Making sure we don't try to upload more keys than we have
 if [ $MAX_UPLOADED_VALUES -gt ${#KEYS[@]} ]; then
     MAX_UPLOADED_VALUES=${#KEYS[@]}
 fi
 
 echo "Initializing database with $MAX_UPLOADED_VALUES keys in batches of $BATCH_SIZE..."
 
-# Process in batches
+# Processing in batches
 completed=0
 while [ $completed -lt $MAX_UPLOADED_VALUES ]; do
-    # Determine current batch size
+    # Determining current batch size
     current_batch_size=$BATCH_SIZE
     if [ $((completed + BATCH_SIZE)) -gt $MAX_UPLOADED_VALUES ]; then
         current_batch_size=$((MAX_UPLOADED_VALUES - completed))
     fi
     
-    # Prepare the batch request
+    # Preparing the batch request
     batch_json='{"txn":{"success":[{'
     
     for ((i=0; i<current_batch_size; i++)); do
@@ -77,15 +76,15 @@ while [ $completed -lt $MAX_UPLOADED_VALUES ]; do
     
     batch_json+='}]}}'
     
-    # Send batch request
+    # Sending the batch request
     RESPONSE=$(curl -s -X POST http://127.0.0.1:2379/v3/kv/txn \
         -H "Content-Type: application/json" \
         --data-binary "$batch_json")
     
-    # Update completed count
+    # Updating the completed count
     completed=$((completed + current_batch_size))
     
-    # Show progress
+    # Showing progress
     show_progress $completed $MAX_UPLOADED_VALUES
 done
 

@@ -15,22 +15,6 @@ import (
 // Gloabl variable for the EMM server's port
 const endPoint = "http://localhost:8245/emm"
 
-// Structs for the Response and Request JSON objects
-// type Response struct {
-// 	Result interface{} `json:"result"`
-// }
-// type Request struct {
-// 	Op  string      `json:"op"`
-// 	Key string      `json:"key"`
-// 	Val interface{} `json:"val,omitempty"`
-// }
-
-// // Structs for the Request JSON objects
-// type RequestClientSide struct {
-// 	Op  string      `json:"op"`
-// 	Key string      `json:"key"`
-// 	Val interface{} `json:"val,omitempty"`
-// }
 
 // Sending a JSON-formatted HTTP request to the EMM server
 func sendEMMRequest(op, key string, val interface{}) (interface{}, error) {
@@ -63,17 +47,10 @@ func sendEMMRequest(op, key string, val interface{}) (interface{}, error) {
 
 	return result.Result, nil
 
-	// // Decoding the response from the EMM server
-	// var result map[string]interface{}
-	// if err := json.NewDecoder(resp.Body).Decode(&result); err != nil { // If the EMM server's response is wrong, we must error out
-	// 	return nil, err
-	// }
-	
-	// return result["result"], nil
 }
 
-// NOTE: The PUT/Update operation is unneeded because a working SET should always find the given index that it needs to PUT/Update
 // Performing a legal GET/Read operation at the EMM server
+// NOTE: The PUT/Update operation is unneeded because a working SET should always find the given index that it needs to PUT/Update
 func Get(key string) (interface{}, error) {
 	return sendEMMRequest("get", key, nil)
 }

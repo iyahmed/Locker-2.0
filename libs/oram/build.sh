@@ -1,20 +1,20 @@
 #!/bin/bash
 # Ismail Ahmed: Builds the dependencies of PathORAM
 
-# Set properties
+# Setting the needed properties
 set -e
 cd "$(dirname "$0")"
 
-# Define paths
+# Define=ing the relative paths
 PATHORAM_INCLUDE="../../deps/PathORAM/include"
 PATHORAM_OBJ="../../deps/PathORAM/obj"
 
-# Compile the  implementation
+# Compiling the PathORAM implementation
 g++ -std=c++11 -fPIC -c -I$PATHORAM_INCLUDE PathORAM.cpp -o PathORAM.o
 g++ -std=c++11 -fPIC -c dummy.cpp -o dummy.o
 
-# Link everything together
+# Linking everything together
 ar rcs libpathoram.a PathORAM.o dummy.o $PATHORAM_OBJ/*.o
 
-# Clean up
+# Letting the user know that we have built the library
 echo "Library built successfully"

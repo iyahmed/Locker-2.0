@@ -16,7 +16,6 @@ const apiEndpoint = "http://localhost:8236"
 
 // All HIRB requests will be handled here
 func sendHIRBRequest(op, key string, val interface{}) (interface{}, error) {
-	// fmt.Printf("Hey everyone!")
 	// Request body handling
 	reqBody := map[string]interface{}{
 		"op":  op,

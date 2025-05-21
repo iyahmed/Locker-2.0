@@ -4,7 +4,7 @@
 
 ### Locker 2.0 (Current)
 
-The new Locker 2.0 is an extension of "Locker" for CSE 247B in the Spring Quarter of 2025 as a Master's Capstone Project for Ismail Ahmed, that is supposed to ensure truly secure communication between a trusted etcd client and an untrusted honest-but-curious etcd server by encrypting all client data and obscuring all client data access patterns from the server. It is an implementation of the "Encrypted Multi-map that Hides Query, Access, and Volume Patterns" research paper by Alexandra Boldyreva of the Georgia Institute of Technology and Tianxin Tang of the Eindhoven University of Technology. It uses a generic oblivious memory (ORAM) data structure and a generic oblivious dictionary (OMAP) data structure, which will be PathORAM and vORAM+HIRB, as described in the "Path ORAM: An Extremely Simple Oblivious RAM Protocol" and the "Practical Oblivious Map Data Structure with Secure Deletion and History Independence" research papers. The ORAM data structure implementation is a modified and compilied `obliviousram/PathORAM` library that is statically linked and has a block size of 64 bytes. The 64 byte block size, defined in `Block.h`, is chosen to allow for messages up to 64 bytes to be stored in a single block, which is large enough for short messages to be entirely contained and small enough to preserve obliviousness. Then, the ORAM will be used as a component of the OMAP, which is a modfified and interpeted `dsroche/obliv` library (built using `pip install -e .[dev]` and tests are ran using `tox` for the Python 3.12 enviroment because `pycryptodome` does not support Python 3.12 currently, run `make clean`, `make`, `pip install --force-reinstall --no-binary :all: pycryptodome paramiko`, `ln -s ~/.local/lib/python3.13/site-packages/Crypto venv/lib/python3.12/site-packages/`, and `pytest -rs`), that itself will be used as a secure memory access black-box to enable the implementation of an secure and encrypted mini-map (EMM) network protocol/data structure that secures all communication between a trusted client and a malicious server. Locker 2.0 can work for both a plaintext default etcd server as well as an encrypted custom etcd server using third-party libraries and software. Locker 2.0 requires a modern Linux server with Bash, Go, common GNU Linux tools (as defined as everything needed to compile and run all libraries, as per the instructions of each library's repository), and to be ran on a 64-bit computer. It is designed to be used in cases where there needs to be extremely secret client-server communication with the inevitable cost of performance. There is a caveat of all single-value JSON responses being returned as strings but all multiple-value JSON responses being lists and another caveat of read JSON requests not using the "val" field. Each inditivaul message is stricted to up to 64 bytes, although this is adjustable inside `deps/PathORAM/include/Blocks.h`, `deps/obliv/obliv_server.py`, and `deps/emm/EMM_server.go`. There is extensive and rigorous testing and benchmarking available, which is stored in `execs/`. The goal of Locker 2.0 is to enable free and open-source (FOSS) drop-in secure communication for services using etcd, with support for any type of etcd client-server communication (local, Docker, or Internet). TODO: Update testign scripts to support the `/etcd` server endpoint. To start the HIRB server on port 8236, do `cd libs/hirb` and then `python obliv_server.py`:
+The new Locker 2.0 is an extension of "Locker", which is written for CSE 247B in the Spring Quarter of 2025 as a Master's Capstone Project for Ismail Ahmed, that ensures truly secure communication between a trusted etcd client and an untrusted honest-but-curious etcd server by encrypting all client data and obscuring all client data access patterns from the server. It is an implementation of the "Encrypted Multi-map that Hides Query, Access, and Volume Patterns" research paper by Alexandra Boldyreva of the Georgia Institute of Technology and Tianxin Tang of the Eindhoven University of Technology. It uses a generic oblivious memory (ORAM) data structure and a generic oblivious dictionary (OMAP) data structure, which will be PathORAM and vORAM+HIRB, as described in the "Path ORAM: An Extremely Simple Oblivious RAM Protocol" and the "Practical Oblivious Map Data Structure with Secure Deletion and History Independence" research papers. The ORAM data structure implementation is a modified and compilied `obliviousram/PathORAM` library that is statically linked and has a block size of 64 bytes. The 64 byte block size, defined in `Block.h`, is chosen to allow for messages up to 64 bytes to be stored in a single block, which is large enough for short messages to be entirely contained and small enough to preserve obliviousness. Then, the ORAM will be used as a component of the OMAP, which is a modfified and interpeted `dsroche/obliv` library (built using `pip install -e .[dev]` and tests are ran using `tox` for the Python 3.12 enviroment because `pycryptodome` does not support Python 3.12 currently, run `make clean`, `make`, `pip install --force-reinstall --no-binary :all: pycryptodome paramiko`, `ln -s ~/.local/lib/python3.13/site-packages/Crypto venv/lib/python3.12/site-packages/`, and `pytest -rs`), that itself will be used as a secure memory access black-box to enable the implementation of an secure and encrypted mini-map (EMM) network protocol/data structure that secures all communication between a trusted client and a malicious server. Locker 2.0 can work for both a plaintext default etcd server as well as an encrypted custom etcd server using third-party libraries and software. Locker 2.0 requires a modern Linux server with Bash, Go, common GNU Linux tools (as defined as everything needed to compile and run all libraries, as per the instructions of each library's repository), and to be ran on a 64-bit computer. It is designed to be used in cases where there needs to be extremely secret client-server communication with the inevitable cost of performance. There is a caveat of all single-value JSON responses being returned as strings but all multiple-value JSON responses being lists and another caveat of read JSON requests not using the "val" field. Each inditivaul message is stricted to up to 64 bytes, although this is adjustable inside `deps/PathORAM/include/Blocks.h`, `deps/obliv/obliv_server.py`, and `deps/emm/EMM_server.go`. There is extensive and rigorous testing and benchmarking available, which is stored in `execs/`. The goal of Locker 2.0 is to enable free and open-source (FOSS) drop-in secure communication for services using etcd, with support for any type of etcd client-server communication (local, Docker, or Internet). TODO: Update testign scripts to support the `/etcd` server endpoint. To start the HIRB server on port 8236, do `cd libs/hirb` and then `python obliv_server.py`:
 
 ### Original Locker (Outdated)
 
@@ -12,7 +12,7 @@ The original Locker was an implementation, written by Ismail Ahmed and Sallar Fa
 
 ## Usage
 
-### Install GVM for Golang (version go1.22.1)
+### Installing GVM for Golang (version go1.22.1)
 
 ```bash
 gvm install go1.4 -B
@@ -26,7 +26,7 @@ gvm use go1.22.1
 export GOROOT_BOOTSTRAP=$GOROOT
 ```
 
-### Install Homebrew for etcd (version 3.5.18)
+### Installing Homebrew for etcd (version 3.5.18)
 
 ```bash
 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -34,19 +34,24 @@ brew update
 brew install etcd
 ```
 
-### Installing the Golang Modules (listed in `go.mod`)
+### Installing the Golang Modules for Locker.2.0 (listed in `go.mod`)
 
 ```bash
 go mod tidy
 ```
 
-### Installing the Locker 2.0 Dependencies (PathORAM)
+### Installing the Locker 2.0 PathORAM Dependency
 
 ```bash
 cd libs/oram
 chmod +x build.sh
 bash build.sh
 ```
+
+
+
+
+## Usage
 
 ### Starting the server and proxy (locally, for testing purposes)
 
@@ -99,6 +104,38 @@ bash benchmark.sh  -n <NUM_REQUESTS> -b <MAX_BATCH_SIZE> -v <MAX_VALUE_SIZE> -r 
 ```
 
 To compare the performance with and without security, swap the `secure.go` and `plaintext.go` files in the `Locker-2.0/` main folder.
+
+## Testings/Benchmarking
+
+### First terminal:
+
+```bash
+etcd
+```
+
+### Second Terminal:
+
+```bash
+cd deps/obliv
+python obliv_server.py
+```
+
+### Third Terminal:
+
+```bash
+gvm use go1.22.1
+go run secure.go
+```
+
+## Fourth Terminal
+
+```bash
+cd execs
+chmod +x init.sh
+chmod +x benchmarks.sh
+bash init.sh <ARGS>
+bash benchmark.sh <ARGS>
+```
 
 ### GET/PUT Request Formats
 
