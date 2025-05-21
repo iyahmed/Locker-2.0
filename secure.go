@@ -86,15 +86,34 @@ func handleRequests(requests []Request, etcdClient *clientv3.Client) map[string]
 					}
 					
 					// Putting the data inside the client's interface
-					strVal, ok := val.(string)
-					if !ok { // If the retrieved data is not a string type, then we will error out
-						log.Printf("SPECIAL ERROR: Retrieved non-string data for key %s", r.Key)
-						return
+					switch v := val.(type) { // Using a switch-case to handle all possible data retrevial cases
+						case string: // Handling a string return from the etcd server
+							if err := json.Unmarshal([]byte(v), &decoded); err != nil {
+								log.Printf("ERROR %v: Failed to unmarshal value for key %s", err, r.Key)
+								decoded = v // If the unmarshaling fails, then we will return the raw string
+							}
+						case []byte: // Handling a raw byte return from the etcd server
+							if err := json.Unmarshal(v, &decoded); err != nil {
+								log.Printf("ERROR %v: Failed to unmarshal value for key %s", err, r.Key)
+								decoded = string(v) // If the unmarshaling fails, then we will return the raw string
+							}
+						default: // Handling all other unsupported edge cases
+							if val == nil {
+								log.Printf("INFO: Key %s was deleted or not found.", r.Key)
+							} else {
+								log.Printf("SPECIAL ERROR: Retrieved non-string data type for key %s", r.Key)
+							}
+							return
 					}
-					if err := json.Unmarshal([]byte(strVal), &decoded); err != nil { // Unmarshaling the data from the JSON
-						log.Printf("ERROR %v: Failed to unmarshal value for key %s", err, r.Key)
-						decoded = val // If the unmarshaling fails, then we will return the raw tring
-					}
+					// strVal, ok := val.(string)
+					// if !ok { // If the retrieved data is not a string type, then we will error out
+					// 	log.Printf("SPECIAL ERROR: Retrieved non-string data for key %s", r.Key)
+					// 	return
+					// }
+					// if err := json.Unmarshal([]byte(strVal), &decoded); err != nil { // Unmarshaling the data from the JSON
+					// 	log.Printf("ERROR %v: Failed to unmarshal value for key %s", err, r.Key)
+					// 	decoded = val // If the unmarshaling fails, then we will return the raw string
+					// }
 
 					// Concurrency logic
 					mu.Lock()
@@ -140,12 +159,12 @@ func handleRequests(requests []Request, etcdClient *clientv3.Client) map[string]
 
 					// Concurrency logic
 					mu.Lock()
-					cliResp[r.RID] = append(cliResp[r.RID], "correct_Deleyte")
+					cliResp[r.RID] = append(cliResp[r.RID], "correct_delete")
 					mu.Unlock()
 				}(req)
 
 			default: // Handling all other unsupported edge cases
-				log.Printf("Unsupported operation: %s", req.Op)
+				log.Printf("Unsupported etcd client operation: %s", req.Op)
 		}
 	}
 	wg.Wait() // We will wait until all client-server communication has finished before finalizing our requests

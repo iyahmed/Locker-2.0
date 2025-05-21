@@ -1,23 +1,23 @@
 Benchmark data log
 
-======= Request 1 =======
-Data: [{"rid":"user1","op":"write","key":"animadversal","val":"\"R3Z2\""},{"rid":"user6","op":"read","key":"animadversal","val":"\"cDRW\""},{"rid":"user7","op":"write","key":"amphitokal","val":"\"UnM=\""}]
-Response: {"user1":"correct_write","user7":"correct_write"}
+======= First Phase: Warm-up Request 1 =======
+Data: [{"rid":"user8","op":"write","key":"beta","val":"\"eGNs\""},{"rid":"user7","op":"write","key":"delta","val":"\"VklZ\""},{"rid":"user5","op":"write","key":"beta","val":"\"Y0xr\""}]
+Response: {"user5":"correct_write","user7":"correct_write","user8":"correct_write"}
 
-======= Request 2 =======
-Data: [{"rid":"user2","op":"read","key":"animadversal","val":"\"RGE=\""},{"rid":"user6","op":"write","key":"backwood","val":"\"b2dM\""},{"rid":"user10","op":"read","key":"animadversal","val":"\"dWVw\""}]
-Response: {"user6":"correct_write"}
+======= First Phase: Warm-up Request 2 =======
+Data: [{"rid":"user8","op":"read","key":"beta","val":"\"ZTNK\""},{"rid":"user2","op":"read","key":"beta","val":"\"R01M\""},{"rid":"user3","op":"read","key":"delta","val":"\"TFpw\""}]
+Response: {"user2":"\"eGNs\"","user3":"\"VklZ\"","user8":"\"eGNs\""}
 
-======= Request 3 =======
-Data: [{"rid":"user3","op":"read","key":"backwood","val":"\"Zw==\""},{"rid":"user1","op":"write","key":"amninions","val":"\"VDFR\""},{"rid":"user10","op":"write","key":"aerial","val":"\"Sw==\""}]
-Response: {"user1":"correct_write","user10":"correct_write","user3":"\"b2dM\""}
+======= First Phase: Warm-up Request 3 =======
+Data: [{"rid":"user10","op":"read","key":"beta","val":"\"aXRs\""},{"rid":"user8","op":"write","key":"kappa","val":"\"UWZM\""},{"rid":"user6","op":"write","key":"beta","val":"\"bWxx\""}]
+Response: {"user10":"\"bWxx\"","user6":"correct_write","user8":"correct_write"}
 
-======= Request 4 =======
-Data: [{"rid":"user4","op":"read","key":"animadversal","val":"\"ejA=\""},{"rid":"user7","op":"read","key":"aerial","val":"\"S2pE\""},{"rid":"user10","op":"read","key":"aerial","val":"\"eUg=\""}]
-Response: {"user10":"\"Sw==\"","user7":"\"Sw==\""}
+======= Second Phase: Delete Request =======
+Data: [{"rid":"user10","op":"delete","key":"beta","val":""},{"rid":"user10","op":"delete","key":"delta","val":""}]
+Response: {"user10":["correct_delete","correct_delete"]}
 
-======= Request 5 =======
-Data: [{"rid":"user1","op":"write","key":"Amblydactyla","val":"\"OA==\""},{"rid":"user5","op":"read","key":"amninions","val":"\"MQ==\""},{"rid":"user7","op":"write","key":"Archaeopteris","val":"\"ZUFz\""}]
-Response: {"user1":"correct_write","user5":"\"VDFR\"","user7":"correct_write"}
-Runtime: 5.517503433 seconds
-Final configuration: 5 requests, 3 batch size, 50% reads
+======= Third Phase: Final Read Verification =======
+Data: [{"rid":"user7","op":"read","key":"beta","val":""},{"rid":"user4","op":"read","key":"delta","val":""},{"rid":"user3","op":"read","key":"kappa","val":""}]
+Response: {"user3":"\"UWZM\""}
+Runtime: .046548831 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 3
