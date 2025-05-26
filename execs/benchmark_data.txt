@@ -1,23 +1,30 @@
 Benchmark data log
 
 ======= First Phase: Warm-up Request 1 =======
-Data: [{"rid":"user8","op":"write","key":"air-season","val":"\"dk10\""},{"rid":"user8","op":"read","key":"air-season","val":"\"V0xL\""},{"rid":"user1","op":"write","key":"anatron","val":"\"Vjg1\""}]
-Response: 
+Data: [{"rid":"user10","op":"write","key":"annular","val":"\"YnFM\""},{"rid":"user5","op":"read","key":"annular","val":"\"S3lp\""},{"rid":"user10","op":"write","key":"Alexandre","val":"\"R2JD\""}]
+Response: {"user10":["correct_write","correct_write"],"user5":"\"YnFM\""}
 
 ======= First Phase: Warm-up Request 2 =======
-Data: [{"rid":"user6","op":"read","key":"anatron","val":"\"U2Zl\""},{"rid":"user3","op":"read","key":"anatron","val":"\"ZFlR\""},{"rid":"user4","op":"read","key":"air-season","val":"\"bGRt\""}]
-Response: 
+Data: [{"rid":"user4","op":"read","key":"annular","val":"\"QWdk\""},{"rid":"user4","op":"write","key":"arcabucero","val":"\"STFj\""},{"rid":"user9","op":"read","key":"arcabucero","val":"\"QTR3\""}]
+Response: {"user4":["correct_write","\"YnFM\""],"user9":"\"STFj\""}
 
 ======= First Phase: Warm-up Request 3 =======
-Data: [{"rid":"user9","op":"write","key":"Aruns","val":"\"d0FM\""},{"rid":"user9","op":"write","key":"B/P","val":"\"b2Nt\""},{"rid":"user4","op":"read","key":"anatron","val":"\"N3BG\""}]
-Response: 
+Data: [{"rid":"user7","op":"write","key":"Angrist","val":"\"clpN\""},{"rid":"user7","op":"read","key":"Alexandre","val":"\"czQ4\""},{"rid":"user6","op":"write","key":"ANTU","val":"\"b1g4\""}]
+Response: {"user6":"correct_write","user7":["\"R2JD\"","correct_write"]}
 
 ======= Second Phase: Delete Request =======
-Data: [{"rid":"user3","op":"delete","key":"air-season","val":""},{"rid":"user2","op":"delete","key":"anatron","val":""}]
-Response: 
+Data: [{"rid":"user1","op":"delete","key":"annular","val":""},{"rid":"user3","op":"delete","key":"Alexandre","val":""}]
+Response: {}
 
 ======= Third Phase: Final Read Verification =======
-Data: [{"rid":"user9","op":"read","key":"air-season","val":""},{"rid":"user5","op":"read","key":"anatron","val":""},{"rid":"user1","op":"read","key":"Aruns","val":""},{"rid":"user2","op":"read","key":"B/P","val":""}]
-Response: 
-Runtime: 5.928610659 seconds
-Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 4
+Data: [{"rid":"user9","op":"read","key":"Alexandre","val":""},{"rid":"user1","op":"read","key":"Angrist","val":""},{"rid":"user10","op":"read","key":"annular","val":""},{"rid":"user3","op":"read","key":"ANTU","val":""},{"rid":"user4","op":"read","key":"arcabucero","val":""}]
+Response: {"user1":"\"clpN\"","user10":"\"YnFM\"","user3":"\"b1g4\"","user4":"\"STFj\"","user9":"\"R2JD\""}
+
+======= Results: =======
+Disk I/O Metrics: Reads=0, Writes=7424 sectors
+Network I/O Metrics: Received=19633 bytes, Sent=16359 bytes
+Runtime: 5.884907868 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5
+Memory Usage (approx): 17.65%
+CPU Usage (approx): 3.8%
+Top Process RSS (KB), Peak RAM Usage: 385264 (code)

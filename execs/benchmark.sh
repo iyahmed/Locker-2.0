@@ -6,6 +6,10 @@
 # The performance benchmarking requires `bc` to be installed locally
 start=$(date +%s.%N)
 
+# Capturing the before-benchmarking network and disk I/O
+NET_IO_BEFORE=$(cat /proc/net/dev | awk '/:/ {rx+=$2; tx+=$10} END{print rx, tx}')
+DISK_IO_BEFORE=$(cat /proc/diskstats | awk '{reads+=$6; writes+=$10} END{print reads, writes}')
+
 # Default configuration parameters
 NUM_REQUESTS=5                   # Number of requests to send
 BATCH_SIZE=3                     # Size of a batch
@@ -13,7 +17,7 @@ MAX_VAL_SIZE=3                   # Maximum value size in bytes
 READ_PERCENTAGE=50               # 50% reads and 50% writes by default
 NUM_WARMUP_BATCHES=3             # Number of warm-up batches used
 KEY_FILE="large_keys.txt"        # Default file where keys are stored
-# URL="http://localhost:5000"    # The plaintext etcd client's URL
+# URL="http://localhost:5000"    # The proxy and plaintext etcd clients' URL
 URL="http://localhost:5000/etcd" # The secure etcd client's URL
 
 # User and key information
@@ -157,6 +161,7 @@ DATA+="]"
 echo "Data: $DATA" >> benchmark_data.txt
 RESPONSE=$(curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$DATA")
 echo "Response: $RESPONSE" >> benchmark_data.txt
+echo -e "\n======= Results: =======" >> benchmark_data.txt # Adding an extra line for visual seperation purposes
 
 
 # OLD testing method that does not include phases and some edge cases:
@@ -219,11 +224,43 @@ echo "Response: $RESPONSE" >> benchmark_data.txt
 # done
 
 
-
-# Performance benchmarking in seconds
+# Computing the execution/wall-clock time metric
 end=$(date +%s.%N)
 runtime=$(echo "$end - $start" | bc)
+
+# Capturing the after benchmarking network and disk I/O
+NET_IO_AFTER=$(cat /proc/net/dev | awk '/:/ {rx+=$2; tx+=$10} END{print rx, tx}')
+DISK_IO_AFTER=$(cat /proc/diskstats | awk '{reads+=$6; writes+=$10} END{print reads, writes}')
+
+# Compute the network and disk I/O metrics' differences and logging them
+read_before=$(echo "$DISK_IO_BEFORE" | awk '{print $1}')
+write_before=$(echo "$DISK_IO_BEFORE" | awk '{print $2}')
+read_after=$(echo "$DISK_IO_AFTER" | awk '{print $1}')
+write_after=$(echo "$DISK_IO_AFTER" | awk '{print $2}')
+disk_read_diff=$((read_after - read_before))
+disk_write_diff=$((write_after - write_before))
+rx_before=$(echo "$NET_IO_BEFORE" | awk '{print $1}')
+tx_before=$(echo "$NET_IO_BEFORE" | awk '{print $2}')
+rx_after=$(echo "$NET_IO_AFTER" | awk '{print $1}')
+tx_after=$(echo "$NET_IO_AFTER" | awk '{print $2}')
+net_rx_diff=$((rx_after - rx_before))
+net_tx_diff=$((tx_after - tx_before))
+echo "Disk I/O Metrics: Reads=$disk_read_diff, Writes=$disk_write_diff sectors" | tee -a benchmark_data.txt
+echo "Network I/O Metrics: Received=$net_rx_diff bytes, Sent=$net_tx_diff bytes" | tee -a benchmark_data.txt
+
+# Logging the execution/wall-clock time metric
 echo "The benchmark's runtime was $runtime seconds."
 echo "Runtime: $runtime seconds" >> benchmark_data.txt
 echo "Final configuration: warm-up batches: $NUM_WARMUP_BATCHES, batch size: $BATCH_SIZE, delete ops: ${#DELETE_KEYS[@]}, read verification: ${#ALL_KEYS[@]}" >> benchmark_data.txt
 # OLD testing method: echo "Final configuration: $NUM_REQUESTS requests, $BATCH_SIZE batch size, $READ_PERCENTAGE% reads" >> benchmark_data.txt
+
+# Additional performance metrics
+PID_CMD=$(ps -eo pid,comm --sort=-rss | head -n 2 | tail -n 1 | awk '{print $2}')
+MAX_RSS=$(ps -eo rss,pid,comm --sort=-rss | head -n 2 | tail -n 1 | awk '{print $1}')
+MEM_USAGE=$(free | grep Mem | awk '{printf("%.2f"), $3/$2 * 100.0}')
+CPU_USAGE=$(top -b -n2 -d0.5 | grep "Cpu(s)" | tail -n1 | awk '{print $2 + $4}')
+
+# Logging the additional peformance metrics
+echo "Memory Usage (approx): $MEM_USAGE%" >> benchmark_data.txt
+echo "CPU Usage (approx): $CPU_USAGE%" >> benchmark_data.txt
+echo "Top Process RSS (KB), Peak RAM Usage: $MAX_RSS ($PID_CMD)" >> benchmark_data.txt

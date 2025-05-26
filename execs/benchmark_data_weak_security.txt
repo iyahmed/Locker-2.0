@@ -1,23 +1,30 @@
 Benchmark data log
 
 ======= First Phase: Warm-up Request 1 =======
-Data: [{"rid":"user5","op":"write","key":"back-streeter","val":"\"MW9u\""},{"rid":"user5","op":"write","key":"ariki","val":"\"R2tj\""},{"rid":"user1","op":"write","key":"anthropomorphisms","val":"\"ak5r\""}]
-Response: {}
+Data: [{"rid":"user6","op":"write","key":"apocrine","val":"\"aU0w\""},{"rid":"user1","op":"read","key":"apocrine","val":"\"aFhE\""},{"rid":"user5","op":"read","key":"apocrine","val":"\"blc2\""}]
+Response: {"user1":"\"aU0w\"","user5":"\"aU0w\""}
 
 ======= First Phase: Warm-up Request 2 =======
-Data: [{"rid":"user2","op":"read","key":"ariki","val":"\"dXJx\""},{"rid":"user10","op":"read","key":"back-streeter","val":"\"bEZD\""},{"rid":"user10","op":"read","key":"back-streeter","val":"\"M1lB\""}]
-Response: {"user10":["\"MW9u\"","\"MW9u\""],"user2":"\"R2tj\""}
+Data: [{"rid":"user7","op":"write","key":"anathematising","val":"\"azdl\""},{"rid":"user6","op":"write","key":"adieus","val":"\"STNR\""},{"rid":"user1","op":"read","key":"anathematising","val":"\"Qzk0\""}]
+Response: {"user1":"\"azdl\""}
 
 ======= First Phase: Warm-up Request 3 =======
-Data: [{"rid":"user10","op":"read","key":"anthropomorphisms","val":"\"MVBD\""},{"rid":"user8","op":"write","key":"Accalia","val":"\"ODB5\""},{"rid":"user3","op":"write","key":"antisensitizer","val":"\"dURh\""}]
-Response: {"user10":"\"ak5r\""}
+Data: [{"rid":"user9","op":"write","key":"acosmist","val":"\"T1pp\""},{"rid":"user2","op":"write","key":"backhanding","val":"\"eHpG\""},{"rid":"user7","op":"read","key":"acosmist","val":"\"ODM3\""}]
+Response: {"user7":"\"T1pp\""}
 
 ======= Second Phase: Delete Request =======
-Data: [{"rid":"user4","op":"delete","key":"back-streeter","val":""},{"rid":"user10","op":"delete","key":"ariki","val":""}]
+Data: [{"rid":"user3","op":"delete","key":"apocrine","val":""},{"rid":"user8","op":"delete","key":"anathematising","val":""}]
 Response: {}
 
 ======= Third Phase: Final Read Verification =======
-Data: [{"rid":"user3","op":"read","key":"Accalia","val":""},{"rid":"user2","op":"read","key":"anthropomorphisms","val":""},{"rid":"user4","op":"read","key":"antisensitizer","val":""},{"rid":"user5","op":"read","key":"ariki","val":""},{"rid":"user6","op":"read","key":"back-streeter","val":""}]
-Response: {"user2":"\"ak5r\"","user3":"\"ODB5\"","user4":"\"dURh\"","user5":"\"R2tj\"","user6":"\"MW9u\""}
-Runtime: 5.917766362 seconds
+Data: [{"rid":"user10","op":"read","key":"acosmist","val":""},{"rid":"user5","op":"read","key":"adieus","val":""},{"rid":"user9","op":"read","key":"anathematising","val":""},{"rid":"user4","op":"read","key":"apocrine","val":""},{"rid":"user5","op":"read","key":"backhanding","val":""}]
+Response: {"user10":"\"T1pp\"","user4":"\"aU0w\"","user5":["\"STNR\"","\"eHpG\""],"user9":"\"azdl\""}
+
+======= Results: =======
+Disk I/O Metrics: Reads=0, Writes=1456 sectors
+Network I/O Metrics: Received=30131 bytes, Sent=29525 bytes
+Runtime: 6.168822978 seconds
 Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5
+Memory Usage (approx): 17.64%
+CPU Usage (approx): 11.8%
+Top Process RSS (KB), Peak RAM Usage: 370268 (plasmashell)
