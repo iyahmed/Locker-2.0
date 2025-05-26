@@ -1,0 +1,23 @@
+Benchmark data log
+
+======= First Phase: Warm-up Request 1 =======
+Data: [{"rid":"user5","op":"write","key":"back-streeter","val":"\"MW9u\""},{"rid":"user5","op":"write","key":"ariki","val":"\"R2tj\""},{"rid":"user1","op":"write","key":"anthropomorphisms","val":"\"ak5r\""}]
+Response: {}
+
+======= First Phase: Warm-up Request 2 =======
+Data: [{"rid":"user2","op":"read","key":"ariki","val":"\"dXJx\""},{"rid":"user10","op":"read","key":"back-streeter","val":"\"bEZD\""},{"rid":"user10","op":"read","key":"back-streeter","val":"\"M1lB\""}]
+Response: {"user10":["\"MW9u\"","\"MW9u\""],"user2":"\"R2tj\""}
+
+======= First Phase: Warm-up Request 3 =======
+Data: [{"rid":"user10","op":"read","key":"anthropomorphisms","val":"\"MVBD\""},{"rid":"user8","op":"write","key":"Accalia","val":"\"ODB5\""},{"rid":"user3","op":"write","key":"antisensitizer","val":"\"dURh\""}]
+Response: {"user10":"\"ak5r\""}
+
+======= Second Phase: Delete Request =======
+Data: [{"rid":"user4","op":"delete","key":"back-streeter","val":""},{"rid":"user10","op":"delete","key":"ariki","val":""}]
+Response: {}
+
+======= Third Phase: Final Read Verification =======
+Data: [{"rid":"user3","op":"read","key":"Accalia","val":""},{"rid":"user2","op":"read","key":"anthropomorphisms","val":""},{"rid":"user4","op":"read","key":"antisensitizer","val":""},{"rid":"user5","op":"read","key":"ariki","val":""},{"rid":"user6","op":"read","key":"back-streeter","val":""}]
+Response: {"user2":"\"ak5r\"","user3":"\"ODB5\"","user4":"\"dURh\"","user5":"\"R2tj\"","user6":"\"MW9u\""}
+Runtime: 5.917766362 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5

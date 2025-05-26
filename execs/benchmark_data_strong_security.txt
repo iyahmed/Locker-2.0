@@ -1,0 +1,23 @@
+Benchmark data log
+
+======= First Phase: Warm-up Request 1 =======
+Data: [{"rid":"user10","op":"write","key":"Apollinaire","val":"\"MHZo\""},{"rid":"user5","op":"read","key":"Apollinaire","val":"\"Y1hL\""},{"rid":"user2","op":"read","key":"Apollinaire","val":"\"Ykcy\""}]
+Response: {"user10":"correct_write"}
+
+======= First Phase: Warm-up Request 2 =======
+Data: [{"rid":"user10","op":"read","key":"Apollinaire","val":"\"TWpu\""},{"rid":"user10","op":"write","key":"anchoretism","val":"\"cDF5\""},{"rid":"user7","op":"write","key":"anthemy","val":"\"S0lt\""}]
+Response: {"user10":["\"MHZo\"","correct_write"],"user7":"correct_write"}
+
+======= First Phase: Warm-up Request 3 =======
+Data: [{"rid":"user10","op":"write","key":"Arkansawyer","val":"\"ak5T\""},{"rid":"user10","op":"write","key":"a-sea","val":"\"QjE0\""},{"rid":"user9","op":"write","key":"androtauric","val":"\"MzBl\""}]
+Response: {"user10":["correct_write","correct_write"],"user9":"correct_write"}
+
+======= Second Phase: Delete Request =======
+Data: [{"rid":"user10","op":"delete","key":"Apollinaire","val":""},{"rid":"user4","op":"delete","key":"anchoretism","val":""},{"rid":"user4","op":"delete","key":"anthemy","val":""}]
+Response: {"user10":"correct_delete","user4":["correct_delete","correct_delete"]}
+
+======= Third Phase: Final Read Verification =======
+Data: [{"rid":"user3","op":"read","key":"anchoretism","val":""},{"rid":"user3","op":"read","key":"androtauric","val":""},{"rid":"user4","op":"read","key":"anthemy","val":""},{"rid":"user9","op":"read","key":"Apollinaire","val":""},{"rid":"user9","op":"read","key":"Arkansawyer","val":""},{"rid":"user8","op":"read","key":"a-sea","val":""}]
+Response: {"user3":"\"MzBl\"","user8":"\"QjE0\"","user9":"\"ak5T\""}
+Runtime: 5.986024228 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 3, read verification: 6
