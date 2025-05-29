@@ -164,66 +164,6 @@ echo "Response: $RESPONSE" >> benchmark_data.txt
 echo -e "\n======= Results: =======" >> benchmark_data.txt # Adding an extra line for visual seperation purposes
 
 
-# OLD testing method that does not include phases and some edge cases:
-#
-# # Reading keys from file as defined by user input, each on a new line
-# KEYS=()
-# while IFS= read -r line; do
-#     KEYS+=("$line")
-# done < "large_keys.txt" # By default, all performance tests should be conducted on large_keys.txt for stress-testing purposes
-# if [ "${#KEYS[@]}" -eq 0 ]; then
-#   echo "Error: large_keys.txt is empty or missing"
-#   exit 1
-# fi
-
-# for ((i=1; i<=NUM_REQUESTS; i++)); do
-#     # Generate the JSON array for the batch
-#     DATA="["
-    
-#     for ((j=1; j<=BATCH_SIZE; j++)); do
-#         # Determine operation based on read percentage
-#         RAND=$((RANDOM % 100 + 1))
-#         if [ ${#WRITTEN_KEYS[@]} -gt 0 ] && [ $RAND -le $READ_PERCENTAGE ]; then
-#           OP="read"
-#           KEY=${WRITTEN_KEYS[$RANDOM % ${#WRITTEN_KEYS[@]}]}
-#         else
-#           OP="write"
-#           KEY=${KEYS[$RANDOM % ${#KEYS[@]}]}
-#           WRITTEN_KEYS+=("$KEY")
-#         fi
-        
-#         # Generate random user
-#         USER=${USERS[$RANDOM % ${#USERS[@]}]}
-
-#         # Generate random value (only needed for writes, but generate anyway)
-#         VAL_SIZE=$((1 + RANDOM % MAX_VAL_SIZE))
-#         VAL=$(tr -dc 'a-zA-Z0-9' < /dev/urandom | head -c $VAL_SIZE | base64)
-
-#         # Add operation to batch
-#         ENTRY="{\"rid\":\"$USER\",\"op\":\"$OP\",\"key\":\"$KEY\",\"val\":\"\\\"$VAL\\\"\"}"
-#         DATA+="$ENTRY"
-        
-#         # Append comma if not last item
-#         if [ "$j" -lt "$BATCH_SIZE" ]; then
-#           DATA+=","
-#         fi
-#     done
-    
-#     DATA+="]"
-    
-#     # Log request information to benchmark_data.txt with append (>>)
-#     echo -e "\n======= Request $i =======" >> benchmark_data.txt
-#     echo "Data: $DATA" >> benchmark_data.txt
-    
-#     # Send curl request and capture response
-#     RESPONSE=$(curl -s -X POST "$URL" -H "Content-Type: application/json" -d "$DATA")
-    
-#     # Log response
-#     echo "Response: $RESPONSE" >> benchmark_data.txt
-#     echo "Request $i sent with batch size: $BATCH_SIZE"
-# done
-
-
 # Computing the execution/wall-clock time metric
 end=$(date +%s.%N)
 runtime=$(echo "$end - $start" | bc)
@@ -246,21 +186,20 @@ tx_after=$(echo "$NET_IO_AFTER" | awk '{print $2}')
 net_rx_diff=$((rx_after - rx_before))
 net_tx_diff=$((tx_after - tx_before))
 echo "Disk I/O Metrics: Reads=$disk_read_diff, Writes=$disk_write_diff sectors" | tee -a benchmark_data.txt
-echo "Network I/O Metrics: Received=$net_rx_diff bytes, Sent=$net_tx_diff bytes" | tee -a benchmark_data.txt
+echo "Network I/O Metrics: Packets Received=$net_rx_diff bytes, Packets Sent=$net_tx_diff bytes" | tee -a benchmark_data.txt
 
 # Logging the execution/wall-clock time metric
-echo "The benchmark's runtime was $runtime seconds."
+echo "The benchmark's runtime was $runtime seconds"
 echo "Runtime: $runtime seconds" >> benchmark_data.txt
 echo "Final configuration: warm-up batches: $NUM_WARMUP_BATCHES, batch size: $BATCH_SIZE, delete ops: ${#DELETE_KEYS[@]}, read verification: ${#ALL_KEYS[@]}" >> benchmark_data.txt
-# OLD testing method: echo "Final configuration: $NUM_REQUESTS requests, $BATCH_SIZE batch size, $READ_PERCENTAGE% reads" >> benchmark_data.txt
 
-# Additional performance metrics
+# Additional memory and CPU performance metrics
 PID_CMD=$(ps -eo pid,comm --sort=-rss | head -n 2 | tail -n 1 | awk '{print $2}')
 MAX_RSS=$(ps -eo rss,pid,comm --sort=-rss | head -n 2 | tail -n 1 | awk '{print $1}')
 MEM_USAGE=$(free | grep Mem | awk '{printf("%.2f"), $3/$2 * 100.0}')
 CPU_USAGE=$(top -b -n2 -d0.5 | grep "Cpu(s)" | tail -n1 | awk '{print $2 + $4}')
 
-# Logging the additional peformance metrics
-echo "Memory Usage (approx): $MEM_USAGE%" >> benchmark_data.txt
-echo "CPU Usage (approx): $CPU_USAGE%" >> benchmark_data.txt
-echo "Top Process RSS (KB), Peak RAM Usage: $MAX_RSS ($PID_CMD)" >> benchmark_data.txt
+# Logging the additional memory and CPU peformance metrics
+echo "Memory Usage: $MEM_USAGE%" | tee -a benchmark_data.txt
+echo "CPU Usage: $CPU_USAGE%" | tee -a benchmark_data.txt
+echo "Top Process RSS: $MAX_RSS KB" | tee -a benchmark_data.txt

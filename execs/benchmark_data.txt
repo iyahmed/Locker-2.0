@@ -1,30 +1,44 @@
 Benchmark data log
 
 ======= First Phase: Warm-up Request 1 =======
-Data: [{"rid":"user10","op":"write","key":"annular","val":"\"YnFM\""},{"rid":"user5","op":"read","key":"annular","val":"\"S3lp\""},{"rid":"user10","op":"write","key":"Alexandre","val":"\"R2JD\""}]
-Response: {"user10":["correct_write","correct_write"],"user5":"\"YnFM\""}
+Data: [{"rid":"user1","op":"write","key":"arachnitis","val":"\"U0Nr\""},{"rid":"user3","op":"read","key":"arachnitis","val":"\"MEU0\""},{"rid":"user8","op":"read","key":"arachnitis","val":"\"UW5z\""}]
+Response: {"user1":"correct_write"}
 
 ======= First Phase: Warm-up Request 2 =======
-Data: [{"rid":"user4","op":"read","key":"annular","val":"\"QWdk\""},{"rid":"user4","op":"write","key":"arcabucero","val":"\"STFj\""},{"rid":"user9","op":"read","key":"arcabucero","val":"\"QTR3\""}]
-Response: {"user4":["correct_write","\"YnFM\""],"user9":"\"STFj\""}
+Data: [{"rid":"user3","op":"read","key":"arachnitis","val":"\"NlI0\""},{"rid":"user4","op":"write","key":"amidofluorid","val":"\"ajY0\""},{"rid":"user1","op":"write","key":"Atworth","val":"\"bHQ1\""}]
+Response: {"user1":"correct_write","user4":"correct_write"}
 
 ======= First Phase: Warm-up Request 3 =======
-Data: [{"rid":"user7","op":"write","key":"Angrist","val":"\"clpN\""},{"rid":"user7","op":"read","key":"Alexandre","val":"\"czQ4\""},{"rid":"user6","op":"write","key":"ANTU","val":"\"b1g4\""}]
-Response: {"user6":"correct_write","user7":["\"R2JD\"","correct_write"]}
-
-======= Second Phase: Delete Request =======
-Data: [{"rid":"user1","op":"delete","key":"annular","val":""},{"rid":"user3","op":"delete","key":"Alexandre","val":""}]
+Data: [{"rid":"user1","op":"read","key":"arachnitis","val":"\"dXJK\""},{"rid":"user2","op":"read","key":"Atworth","val":"\"U29T\""},{"rid":"user9","op":"read","key":"Atworth","val":"\"V0gy\""}]
 Response: {}
 
+======= Second Phase: Delete Request =======
+Data: [{"rid":"user6","op":"delete","key":"arachnitis","val":""}]
+Response: {"user6":"correct_delete"}
+
 ======= Third Phase: Final Read Verification =======
-Data: [{"rid":"user9","op":"read","key":"Alexandre","val":""},{"rid":"user1","op":"read","key":"Angrist","val":""},{"rid":"user10","op":"read","key":"annular","val":""},{"rid":"user3","op":"read","key":"ANTU","val":""},{"rid":"user4","op":"read","key":"arcabucero","val":""}]
-Response: {"user1":"\"clpN\"","user10":"\"YnFM\"","user3":"\"b1g4\"","user4":"\"STFj\"","user9":"\"R2JD\""}
+Data: [{"rid":"user5","op":"read","key":"amidofluorid","val":""},{"rid":"user1","op":"read","key":"arachnitis","val":""},{"rid":"user4","op":"read","key":"Atworth","val":""}]
+Response: {}
 
 ======= Results: =======
-Disk I/O Metrics: Reads=0, Writes=7424 sectors
-Network I/O Metrics: Received=19633 bytes, Sent=16359 bytes
-Runtime: 5.884907868 seconds
-Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5
-Memory Usage (approx): 17.65%
-CPU Usage (approx): 3.8%
-Top Process RSS (KB), Peak RAM Usage: 385264 (code)
+Disk I/O Metrics: Reads=0, Writes=1184 sectors
+Network I/O Metrics: Packets Received=40148 bytes, Packets Sent=39936 bytes
+Runtime: 6.241356501 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 1, read verification: 3
+Memory Usage: 37.36%
+CPU Usage: 3.9%
+Top Process RSS: 1325216 KB
+Disk I/O Metrics: Reads=0, Writes=1184 sectors
+Network I/O Metrics: Packets Received=40148 bytes, Packets Sent=39936 bytes
+The benchmark's runtime was 6.241356501 seconds
+Memory Usage: 37.36%
+CPU Usage: 3.9%
+Top Process RSS: 1325216 KB
+Average Runtime: 6.043 seconds
+Average Memory Usage: 37.323%
+Average CPU Usage: 3.566%
+Average Peak RSS: 1319049.333 KB
+Average Disk Reads: 0 sectors
+Average Disk Writes: 2176.000 sectors
+Average Network RX: 45205.333 bytes
+Average Network TX: 45707.000 bytes

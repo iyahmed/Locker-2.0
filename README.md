@@ -114,7 +114,7 @@ go run plaintext.go
 # Call any API that is designed to work with either `secure.go`, `proxy.go`, or `plaintext.go`
 ```
 
-## Benchmarking/Testing Locker 2.0 Locally for `secure.go` (The benchmark's data log file is in `execs/benchmark_data.txt` and it has its own defaults, as seen in `benchmark.sh`)
+## End-to-End Benchmarking/Testing Locker 2.0 Locally for `secure.go` (The benchmark's data log file is in `execs/benchmark_data.txt` and it has its own defaults, as seen in `benchmark.sh` and `repeated_benchmarks.sh`)
 
 ### First Testing Terminal
 
@@ -136,14 +136,26 @@ gvm use go1.22.1
 go run secure.go
 ```
 
-## Fourth Testing Terminal
+## Fourth Testing Terminal (For an individual test run)
 
 ```bash
 cd execs
 chmod +x init.sh
-chmod +x benchmarks.sh
+chmod +x benchmark.sh
+chmod +x repeated_benchmarks.sh
 bash init.sh <small_keys.txt | medium_keys.txt | large_keys.txt> <MAX_VALUES>
 bash benchmark.sh --num-requests NUM --batch-size SIZE --val-size MAX --warmup-batches NUM --read-percentage PCT --key-file FILE --help
+```
+
+## Fourth Testing Terminal (For a test run repeated 7 times, with the 4 most extreme values filtered out, and the remaining 3 test runs averaged out)
+
+```bash
+cd execs
+chmod +x init.sh
+chmod +x benchmark.sh
+chmod +x repeated_benchmarks.sh
+bash init.sh <small_keys.txt | medium_keys.txt | large_keys.txt> <MAX_VALUES>
+bash repeated_benchmarks.sh --num-requests NUM --batch-size SIZE --val-size MAX --warmup-batches NUM --read-percentage PCT --key-file FILE --help
 ```
 
 To compare the performance of `secure.go`, `proxy.go`, and `plaintext.go`, make sure that all three folders are in `Locker-2.0/`'s main folder, modify `benchmarks.sh` as needed, and follow the instructions in the previous Section (except for the Fourth Terminal instruction in this Section).
