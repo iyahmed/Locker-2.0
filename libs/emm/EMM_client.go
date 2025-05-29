@@ -1,5 +1,5 @@
 // libs/emm/emm_client.go
-// Ismail Ahmed: Implements the client-side of the encrypted mini-map (EMM) oblivious memory data structure
+// Ismail Ahmed: Implements the client-side of the encrypted mini-map (EMM) oblivious memory data structure as an internal server
 
 package emm
 

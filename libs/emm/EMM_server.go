@@ -139,7 +139,6 @@ func getOrCreateIndex(key string) (uint64, error) {
 		return 0, fmt.Errorf("ERROR 3: The HIRB set operation failed: %w", err)
 	}
 
-
 	return newID, nil
 }
 

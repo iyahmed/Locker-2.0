@@ -116,27 +116,27 @@ go run plaintext.go
 
 ## End-to-End Benchmarking/Testing Locker 2.0 Locally for `secure.go` (The benchmark's data log file is in `execs/benchmark_data.txt` and it has its own defaults, as seen in `benchmark.sh` and `repeated_benchmarks.sh`)
 
-### First Testing Terminal
+### First End-to-End Testing Terminal
 
 ```bash
 etcd
 ```
 
-### Second Testing Terminal
+### Second End-to-End Testing Terminal
 
 ```bash
 cd deps/obliv
 python obliv_server.py
 ```
 
-### Third Testing Terminal
+### Third End-to-End Testing Terminal
 
 ```bash
 gvm use go1.22.1
 go run secure.go
 ```
 
-## Fourth Testing Terminal (For an individual test run)
+## Fourth End-to-End Testing Terminal (For an individual test run)
 
 ```bash
 cd execs
@@ -159,6 +159,22 @@ bash repeated_benchmarks.sh --num-requests NUM --batch-size SIZE --val-size MAX 
 ```
 
 To compare the performance of `secure.go`, `proxy.go`, and `plaintext.go`, make sure that all three folders are in `Locker-2.0/`'s main folder, modify `benchmarks.sh` as needed, and follow the instructions in the previous Section (except for the Fourth Terminal instruction in this Section).
+
+## EMM to Plaintext MultiMap Benchmarking/Testing Locally for `testing_emm.go` (The input key file must be stored in the `root/` folder, it does not output a benchmark data log, it does not have command-line arguments, and it has similar defaults to `repeated_benchmarks.sh`)
+
+### First EMM to Plaintext MultiMap Testing Terminal
+
+```bash
+cd deps/obliv
+python obliv_server.py
+```
+
+### Second EMM to Plaintext MultiMap Testing Terminal
+
+```bash
+gvm use go1.22.2
+go run testing_emm.go
+```
 
 ## API Calls in Locker 2.0
 
