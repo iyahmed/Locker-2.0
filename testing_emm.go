@@ -10,10 +10,11 @@ import (
 	"math/rand"
 	"os"
 	"encoding/json"
-	"os/exec"
+	"io/ioutil"
 	"runtime"
 	"sort"
 	"strconv"
+	"syscall"
 	"locker/libs/emm"
 )
 
@@ -36,6 +37,10 @@ type MultiMap interface {
 	Read(key string) [] string
 	Write(key, val string)
 	Delete(key string)
+}
+type DiskStats struct {
+	ReadBytes  int64
+	WriteBytes int64
 }
 
 // Plaintext MultiMap implementation functions
@@ -97,6 +102,8 @@ func (r *RealEMMAdapter) Read(key string) []string {
 		log.Printf("Read error: %v", err)
 		return nil
 	}
+
+	// Returning the corresponding value, given a key, from the Real EMM
 	return vals
 }
 
@@ -174,8 +181,25 @@ func readKeys(filename string) []string {
 	return keys
 }
 
+// Tracking the current state of the disk
+func readDiskIO() DiskStats {
+	syscall.Sync() // Forced flush to disk, to get accurate disk write numbers
+	stats := DiskStats{}
+	if data, err := ioutil.ReadFile("/proc/self/io"); err == nil {
+		lines := strings.Split(string(data), "\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "read_bytes:") {
+				stats.ReadBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
+			} else if strings.HasPrefix(line, "write_bytes:") {
+				stats.WriteBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
+			}
+		}
+	}
+	return stats
+}
+
 // Recording the benchmark's metrics, just like in `benchmark.sh` and `repeated_benchmarks.sh`
-func getUsageStats() (memUsage float64, cpuUsage float64, topRSS int, diskReads int, diskWrites int) {
+func getUsageStats(startTime time.Time, before DiskStats, after DiskStats) (memUsage float64, cpuUsage float64, topRSS int, diskReads int64, diskWrites int64) {
 	// Finding out the current process's memory consumption metric (in Kilobytes)
 	mem := &runtime.MemStats{}
 	runtime.ReadMemStats(mem)
@@ -183,45 +207,57 @@ func getUsageStats() (memUsage float64, cpuUsage float64, topRSS int, diskReads 
 
 	// Finding out the top process' Resident Set Size (RSS) metric (in Kilobytes)
 	topRSS = 0
-	topCmd := exec.Command("ps", "-eo", "rss", "--sort=-rss")
-	output, err := topCmd.Output()
-	if err == nil {
-		lines := strings.Split(string(output), "\n")
-		if len(lines) > 1 {
-			topRSS, _ = strconv.Atoi(strings.TrimSpace(lines[1]))
+	if data, err := ioutil.ReadFile("/proc/self/status"); err == nil {
+		lines := strings.Split(string(data), "\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "VmRSS:") {
+				parts := strings.Fields(line)
+				if len(parts) >= 2 {
+					topRSS, _ = strconv.Atoi(parts[1])
+				}
+				break
+			}
 		}
 	}
 
 	// Finding out the current process' CPU consumption metric (in percentages)
-	cpuCmd := exec.Command("top", "-bn2", "-d0.5")
-	cpuOut, err := cpuCmd.Output()
-	if err == nil {
-		lines := strings.Split(string(cpuOut), "\n")
+	var usage syscall.Rusage
+	syscall.Getrusage(syscall.RUSAGE_SELF, &usage)
+	cpuUser := time.Duration(usage.Utime.Sec) * time.Second + time.Duration(usage.Utime.Usec) * time.Microsecond
+	cpuSys := time.Duration(usage.Stime.Sec) * time.Second + time.Duration(usage.Stime.Usec) * time.Microsecond
+	totalCPU := cpuUser + cpuSys
+	totalElapsed := time.Since(startTime)
+	cpuCount := float64(runtime.NumCPU())
+	cpuUsage = (totalCPU.Seconds() / totalElapsed.Seconds()) * 100.0 / cpuCount
+
+	// Finding out the current process' disk utilization metrics (in sectors)
+	diskReads = (after.ReadBytes - before.ReadBytes) / 512
+	diskWrites = (after.WriteBytes - before.WriteBytes) / 512
+	/*diskReads, diskWrites = 0, 0
+	if data, err := ioutil.ReadFile("/proc/self/io"); err == nil {
+		lines := strings.Split(string(data), "\n")
 		for _, line := range lines {
-			if strings.Contains(line, "CPU(s)") {
-				fields := strings.Fields(line)
-				if len(fields) >= 8 {
-					u, _ := strconv.ParseFloat(strings.Trim(fields[1], "%"), 64)
-					s, _ := strconv.ParseFloat(strings.Trim(fields[3], "%"), 64)
-					cpuUsage = u + s
+			if strings.HasPrefix(line, "read_bytes:") {
+				parts := strings.Fields(line)
+				if len(parts) == 2 {
+					diskReads, _ = strconv.ParseInt(parts[1], 10, 64)
+				}
+			}
+			if strings.HasPrefix(line, "write_bytes:") {
+				parts := strings.Fields(line)
+				if len(parts) == 2 {
+					diskWrites, _ = strconv.ParseInt(parts[1], 10, 64)
 				}
 			}
 		}
 	}
 
-	// Finding out the current process' disk utlization metrics (in sectors)
-	diskCmd := exec.Command("awk", "{reads+=$6; writes+=$10} END{print reads, writes}", "/proc/diskstats")
-	diskOut, err := diskCmd.Output()
-	if err == nil {
-		parts := strings.Fields(string(diskOut))
-		if len(parts) == 2 {
-			diskReads, _ = strconv.Atoi(parts[0])
-			diskWrites, _ = strconv.Atoi(parts[1])
-		}
-	}
+	// Adjusting the disk reads and disk writes metrics to be for sectors
+	diskReads /= 512
+	diskWrites /= 512*/
 
-	// Void return, to avoid Go compiler errors
-	return
+	// Returning the 5 metrics explicitly
+	return memUsage, cpuUsage, topRSS, diskReads, diskWrites
 }
 
 // Testing and benchmarking the Real EMM and the Plaintext MultiMap, using the same benchmarking methods as in `repeated_benchmarks.sh`
@@ -240,6 +276,7 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 	runtimes := []float64{}
 	for run := 1; run <= totalRuns; run++ {
 		// Initlization for an individual run
+		diskBefore := readDiskIO()
 		start := time.Now()
 		writtenKeys := []string{}
 		var allKeys []string
@@ -282,9 +319,13 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 		}
 
 		// Computing the metrics for an individual run
-		elapsed := time.Since(start).Seconds()
+		elapsed := float64(time.Since(start).Microseconds()) / 1000.0
 		runtimes = append(runtimes, elapsed)
-		mem, cpu, rss, dreads, dwrites := getUsageStats()
+		diskAfter := readDiskIO()
+		mem, cpu, rss, dreads, dwrites := getUsageStats(start, diskBefore, diskAfter)
+		/*dreads := (diskAfter.ReadBytes - diskBefore.ReadBytes) / 512
+		dwrites := (diskAfter.WriteBytes - diskBefore.WriteBytes) / 512*/
+
 		fmt.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors\n",
 			name, run, elapsed, mem, cpu, rss, dreads, dwrites)
 	}
