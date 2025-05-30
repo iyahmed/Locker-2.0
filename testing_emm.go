@@ -52,7 +52,7 @@ type DiskStats struct {
 // Constructing the Plaintext MultiMap
 func newPlaintextMultiMap() *PlaintextMultiMap {
 	// Creating a temporary file for the plaintext multimap's disk read/writes
-	dir, err := ioutil.TempDir("/tmp", "plaintext_multimap")
+	dir, err := ioutil.TempDir("/var/tmp", "plaintext_multimap")
 	if err != nil {
 		log.Fatalf("Could not create a temporary directory: %v", err)
 	}
@@ -73,11 +73,12 @@ func (p *PlaintextMultiMap) Read(key string) []string {
 	// Returning the corresponding value paired to the key, if possible
 	val := p.store[key]
 	// Writing it into the temporary file
-	// path := filepath.Join(p.tempDir, "read_" + key)
-	// _ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
 	path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
 	_ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
 	syscall.Sync()
+	// Forcing the file read to be registered as an disk operation
+	content, _ := ioutil.ReadFile(path)
+	_ = content
 	return val
 }
 
@@ -90,8 +91,6 @@ func (p *PlaintextMultiMap) Write(key, val string) {
 	// Writing the (key, value) pair into the Plaintext MultiMap, if possible
 	p.store[key] = append(p.store[key], val)
 	// Writing it into a temporary file
-	// path := filepath.Join(p.tempDir, "write_" + key)
-	// _ = ioutil.WriteFile(path, []byte(val), 0644)
 	path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
 	_ = ioutil.WriteFile(path, []byte(val), 0644)
 	syscall.Sync()
@@ -106,47 +105,46 @@ func (p *PlaintextMultiMap) Delete(key string) {
 	// Deleting the (key, value) pair from the Plaintext MultiMap, if possible
 	delete(p.store, key)
 	// Writing it into a temporary file
-	// _ = ioutil.WriteFile("/tmp/disk_sim_delete.txt", []byte(key), 0644)
 	path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
 	_ = ioutil.WriteFile(path, []byte(key), 0644)
 	syscall.Sync()
 }
 
-// Real EMM Wrapper functions
+// Baseline EMM Wrapper functions
 
-// Constructing the Real EMM Wrapper
+// Constructing the Baseline EMM Wrapper
 func newRealEMMWrapper() MultiMap {
-	// Using the `EMM_insecure_client.go` file as the Real EMM's implementation
+	// Using the `EMM_insecure_client.go` file as the Baseline EMM's implementation
 	client := emm.NewClient()
 
-	// Returning the Real EMM Wrapper, as defined in the `emm` Go Module
+	// Returning the Baseline EMM Wrapper, as defined in the `emm` Go Module
 	return &RealEMMAdapter{client: client}
 }
 
-// Reading the corresponding value, given a key, from the Real EMM
+// Reading the corresponding value, given a key, from the Baseline EMM
 func (r *RealEMMAdapter) Read(key string) []string {
-	// Reading the corresponding value, given a key, from the Real EMM
+	// Reading the corresponding value, given a key, from the Baseline EMM
 	vals, err := r.client.Get(key)
 	if err != nil {
 		log.Printf("Read error: %v", err)
 		return nil
 	}
 
-	// Returning the corresponding value, given a key, from the Real EMM
+	// Returning the corresponding value, given a key, from the Baseline EMM
 	return vals
 }
 
-// Writing the (key, value) pair into the Real EMM
+// Writing the (key, value) pair into the Baseline EMM
 func (r *RealEMMAdapter) Write(key, val string) {
-	// Writing the (key, value) pair into the Real EMM, if possible
+	// Writing the (key, value) pair into the Baseline EMM, if possible
 	if err := r.client.Put(key, val); err != nil {
 		log.Printf("Write error: %v", err)
 	}
 }
 
-// Deleting the (key, value) pair from the Real EMM
+// Deleting the (key, value) pair from the Baseline EMM
 func (r *RealEMMAdapter) Delete(key string) {
-	// Deleting the (key, value) pair from the Real EMM, if possible
+	// Deleting the (key, value) pair from the Baseline EMM, if possible
 	if err := r.client.Delete(key); err != nil {
 		log.Printf("Delete error: %v", err)
 	}
@@ -273,7 +271,7 @@ func getUsageStats(startTime time.Time, before DiskStats, after DiskStats) (memU
 	return memUsage, cpuUsage, topRSS, diskReads, diskWrites, cacheReads, cacheWrites
 }
 
-// Testing and benchmarking the Real EMM and the Plaintext MultiMap, using the same benchmarking methods as in `repeated_benchmarks.sh`
+// Testing and benchmarking the Baseline EMM and the Plaintext MultiMap, using the same benchmarking methods as in `repeated_benchmarks.sh`
 func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 	// These are the same default setttings as in `repeated_benchmarks.sh`
 	const (
@@ -359,5 +357,5 @@ func main() {
 
 	// Benchmarking logic
 	benchmark("Plaintext MultiMap", plainTest, keys, users)
-	benchmark("Real Secure EMM", realEMM, keys, users)
+	benchmark("Baseline Secure EMM", realEMM, keys, users)
 }
