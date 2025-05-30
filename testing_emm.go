@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"syscall"
+	"path/filepath"
 	"locker/libs/emm"
 )
 
@@ -29,6 +30,7 @@ type Request struct {
 type PlaintextMultiMap struct {
 	mu sync.RWMutex
 	store map[string][]string
+	tempDir string
 }
 type RealEMMAdapter struct {
 	client *emm.Client
@@ -39,17 +41,26 @@ type MultiMap interface {
 	Delete(key string)
 }
 type DiskStats struct {
-	ReadBytes  int64
-	WriteBytes int64
+	ReadBytes       int64
+	WriteBytes      int64
+	CacheReadBytes  int64
+	CacheWriteBytes int64
 }
 
 // Plaintext MultiMap implementation functions
 
 // Constructing the Plaintext MultiMap
 func newPlaintextMultiMap() *PlaintextMultiMap {
+	// Creating a temporary file for the plaintext multimap's disk read/writes
+	dir, err := ioutil.TempDir("/tmp", "plaintext_multimap")
+	if err != nil {
+		log.Fatalf("Could not create a temporary directory: %v", err)
+	}
+	
 	// Returning the Plaintext MultiMap Wrapper, with the storage as a map of arrays of strings
 	return &PlaintextMultiMap {
 		store: make(map[string][]string),
+		tempDir: dir,
 	}
 }
 
@@ -60,7 +71,14 @@ func (p *PlaintextMultiMap) Read(key string) []string {
 	defer p.mu.RUnlock()
 
 	// Returning the corresponding value paired to the key, if possible
-	return p.store[key]
+	val := p.store[key]
+	// Writing it into the temporary file
+	// path := filepath.Join(p.tempDir, "read_" + key)
+	// _ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
+	path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
+	_ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
+	syscall.Sync()
+	return val
 }
 
 // Writing the (key, value) pair into the Plaintext MultiMap
@@ -71,6 +89,12 @@ func (p *PlaintextMultiMap) Write(key, val string) {
 
 	// Writing the (key, value) pair into the Plaintext MultiMap, if possible
 	p.store[key] = append(p.store[key], val)
+	// Writing it into a temporary file
+	// path := filepath.Join(p.tempDir, "write_" + key)
+	// _ = ioutil.WriteFile(path, []byte(val), 0644)
+	path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
+	_ = ioutil.WriteFile(path, []byte(val), 0644)
+	syscall.Sync()
 }
 
 // Deleting the (key, value) pair from the Plaintext MultiMap
@@ -81,6 +105,11 @@ func (p *PlaintextMultiMap) Delete(key string) {
 
 	// Deleting the (key, value) pair from the Plaintext MultiMap, if possible
 	delete(p.store, key)
+	// Writing it into a temporary file
+	// _ = ioutil.WriteFile("/tmp/disk_sim_delete.txt", []byte(key), 0644)
+	path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
+	_ = ioutil.WriteFile(path, []byte(key), 0644)
+	syscall.Sync()
 }
 
 // Real EMM Wrapper functions
@@ -192,6 +221,10 @@ func readDiskIO() DiskStats {
 				stats.ReadBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
 			} else if strings.HasPrefix(line, "write_bytes:") {
 				stats.WriteBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
+			} else if strings.HasPrefix(line, "rchar:") {
+				stats.CacheReadBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
+			} else if strings.HasPrefix(line, "wchar:") {
+				stats.CacheWriteBytes, _ = strconv.ParseInt(strings.Fields(line)[1], 10, 64)
 			}
 		}
 	}
@@ -199,7 +232,7 @@ func readDiskIO() DiskStats {
 }
 
 // Recording the benchmark's metrics, just like in `benchmark.sh` and `repeated_benchmarks.sh`
-func getUsageStats(startTime time.Time, before DiskStats, after DiskStats) (memUsage float64, cpuUsage float64, topRSS int, diskReads int64, diskWrites int64) {
+func getUsageStats(startTime time.Time, before DiskStats, after DiskStats) (memUsage float64, cpuUsage float64, topRSS int, diskReads int64, diskWrites int64, cacheReads int64, cacheWrites int64) {
 	// Finding out the current process's memory consumption metric (in Kilobytes)
 	mem := &runtime.MemStats{}
 	runtime.ReadMemStats(mem)
@@ -233,31 +266,11 @@ func getUsageStats(startTime time.Time, before DiskStats, after DiskStats) (memU
 	// Finding out the current process' disk utilization metrics (in sectors)
 	diskReads = (after.ReadBytes - before.ReadBytes) / 512
 	diskWrites = (after.WriteBytes - before.WriteBytes) / 512
-	/*diskReads, diskWrites = 0, 0
-	if data, err := ioutil.ReadFile("/proc/self/io"); err == nil {
-		lines := strings.Split(string(data), "\n")
-		for _, line := range lines {
-			if strings.HasPrefix(line, "read_bytes:") {
-				parts := strings.Fields(line)
-				if len(parts) == 2 {
-					diskReads, _ = strconv.ParseInt(parts[1], 10, 64)
-				}
-			}
-			if strings.HasPrefix(line, "write_bytes:") {
-				parts := strings.Fields(line)
-				if len(parts) == 2 {
-					diskWrites, _ = strconv.ParseInt(parts[1], 10, 64)
-				}
-			}
-		}
-	}
+	cacheReads = (after.CacheReadBytes - before.CacheReadBytes) / 512
+	cacheWrites = (after.CacheWriteBytes - before.CacheWriteBytes) / 512
 
-	// Adjusting the disk reads and disk writes metrics to be for sectors
-	diskReads /= 512
-	diskWrites /= 512*/
-
-	// Returning the 5 metrics explicitly
-	return memUsage, cpuUsage, topRSS, diskReads, diskWrites
+	// Returning the 7 metrics explicitly
+	return memUsage, cpuUsage, topRSS, diskReads, diskWrites, cacheReads, cacheWrites
 }
 
 // Testing and benchmarking the Real EMM and the Plaintext MultiMap, using the same benchmarking methods as in `repeated_benchmarks.sh`
@@ -322,12 +335,10 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 		elapsed := float64(time.Since(start).Microseconds()) / 1000.0
 		runtimes = append(runtimes, elapsed)
 		diskAfter := readDiskIO()
-		mem, cpu, rss, dreads, dwrites := getUsageStats(start, diskBefore, diskAfter)
-		/*dreads := (diskAfter.ReadBytes - diskBefore.ReadBytes) / 512
-		dwrites := (diskAfter.WriteBytes - diskBefore.WriteBytes) / 512*/
+		mem, cpu, rss, dreads, dwrites, creads, cwrites := getUsageStats(start, diskBefore, diskAfter)
 
-		fmt.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors\n",
-			name, run, elapsed, mem, cpu, rss, dreads, dwrites)
+		fmt.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors | Disk Cache Reads: %d sectors | Disk Cache Writes: %d sectors \n",
+			name, run, elapsed, mem, cpu, rss, dreads, dwrites, creads, cwrites)
 	}
 
 	// Outputting the average runs' metrics
