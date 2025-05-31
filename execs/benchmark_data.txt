@@ -1,44 +1,44 @@
 Benchmark data log
 
 ======= First Phase: Warm-up Request 1 =======
-Data: [{"rid":"user6","op":"write","key":"asthmatoid","val":"\"akZO\""},{"rid":"user7","op":"read","key":"asthmatoid","val":"\"aDdI\""},{"rid":"user7","op":"write","key":"anthophobia","val":"\"eTVr\""}]
-Response: {"user6":"correct_write","user7":"correct_write"}
+Data: [{"rid":"user8","op":"write","key":"arrays","val":"\"NTFN\""},{"rid":"user8","op":"write","key":"Anaplasma","val":"\"d3RZ\""},{"rid":"user6","op":"read","key":"Anaplasma","val":"\"emxZ\""}]
+Response: {"user8":["correct_write","correct_write"]}
 
 ======= First Phase: Warm-up Request 2 =======
-Data: [{"rid":"user7","op":"write","key":"agonistic","val":"\"TFdX\""},{"rid":"user8","op":"read","key":"anthophobia","val":"\"ZUM4\""},{"rid":"user8","op":"read","key":"asthmatoid","val":"\"QWRU\""}]
-Response: {"user7":"correct_write","user8":"\"eTVr\""}
+Data: [{"rid":"user6","op":"write","key":"affixing","val":"\"VjY5\""},{"rid":"user8","op":"write","key":"allograph","val":"\"UUIy\""},{"rid":"user7","op":"read","key":"affixing","val":"\"TFRR\""}]
+Response: {"user6":"correct_write","user8":"correct_write"}
 
 ======= First Phase: Warm-up Request 3 =======
-Data: [{"rid":"user7","op":"write","key":"andoroba","val":"\"T3ps\""},{"rid":"user2","op":"read","key":"anthophobia","val":"\"aTlR\""},{"rid":"user4","op":"write","key":"asco-","val":"\"dFNV\""}]
-Response: {"user2":"\"eTVr\"","user4":"correct_write","user7":"correct_write"}
+Data: [{"rid":"user6","op":"read","key":"affixing","val":"\"ck91\""},{"rid":"user9","op":"read","key":"allograph","val":"\"S2FM\""},{"rid":"user2","op":"read","key":"Anaplasma","val":"\"MVBX\""}]
+Response: {"user2":"\"d3RZ\"","user9":"\"UUIy\""}
 
 ======= Second Phase: Delete Request =======
-Data: [{"rid":"user5","op":"delete","key":"asthmatoid","val":""},{"rid":"user9","op":"delete","key":"anthophobia","val":""}]
-Response: {"user5":"correct_delete","user9":"correct_delete"}
+Data: [{"rid":"user5","op":"delete","key":"arrays","val":""},{"rid":"user4","op":"delete","key":"Anaplasma","val":""}]
+Response: {"user4":"correct_delete","user5":"correct_delete"}
 
 ======= Third Phase: Final Read Verification =======
-Data: [{"rid":"user3","op":"read","key":"agonistic","val":""},{"rid":"user2","op":"read","key":"andoroba","val":""},{"rid":"user5","op":"read","key":"anthophobia","val":""},{"rid":"user2","op":"read","key":"asco-","val":""},{"rid":"user8","op":"read","key":"asthmatoid","val":""}]
-Response: {"user2":["\"T3ps\"","\"dFNV\""],"user3":"\"TFdX\""}
+Data: [{"rid":"user5","op":"read","key":"affixing","val":""},{"rid":"user4","op":"read","key":"allograph","val":""},{"rid":"user1","op":"read","key":"Anaplasma","val":""},{"rid":"user9","op":"read","key":"arrays","val":""}]
+Response: {"user4":"\"UUIy\""}
 
 ======= Results: =======
-Disk I/O Metrics: Reads=0, Writes=1952 sectors
-Network I/O Metrics: Packets Received=47069 bytes, Packets Sent=46949 bytes
-Runtime: 5.981893958 seconds
-Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5
-Memory Usage: 27.29%
-CPU Usage: 1.5%
-Top Process RSS: 587564 KB
-Disk I/O Metrics: Reads=0, Writes=1952 sectors
-Network I/O Metrics: Packets Received=47069 bytes, Packets Sent=46949 bytes
-The benchmark's runtime was 5.981893958 seconds
-Memory Usage: 27.29%
-CPU Usage: 1.5%
-Top Process RSS: 587564 KB
-Average Runtime: 6.108 seconds
-Average Memory Usage: 27.283%
-Average CPU Usage: 1.766%
-Average Peak RSS: 584270.666 KB
+Disk I/O Metrics: Reads=0, Writes=32 sectors
+Network I/O Metrics: Packets Received=44614 bytes, Packets Sent=44390 bytes
+Runtime: 5.752136195 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 4
+Memory Usage: 23.45%
+CPU Usage: 1.4%
+Top Process RSS: 459348 KB
+Disk I/O Metrics: Reads=0, Writes=32 sectors
+Network I/O Metrics: Packets Received=44614 bytes, Packets Sent=44390 bytes
+The benchmark's runtime was 5.752136195 seconds
+Memory Usage: 23.45%
+CPU Usage: 1.4%
+Top Process RSS: 459348 KB
+Average Runtime: 5.872 seconds
+Average Memory Usage: 23.343%
+Average CPU Usage: 1.466%
+Average Peak RSS: 460653.333 KB
 Average Disk Reads: 0 sectors
-Average Disk Writes: 2144.000 sectors
-Average Network RX: 48680.666 bytes
-Average Network TX: 47408.666 bytes
+Average Disk Writes: 874.666 sectors
+Average Network RX: 49357.000 bytes
+Average Network TX: 49559.333 bytes

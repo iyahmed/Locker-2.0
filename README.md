@@ -147,7 +147,7 @@ bash init.sh <small_keys.txt | medium_keys.txt | large_keys.txt> <MAX_VALUES>
 bash benchmark.sh --num-requests NUM --batch-size SIZE --val-size MAX --warmup-batches NUM --read-percentage PCT --key-file FILE --help
 ```
 
-## Fourth Testing Terminal (For a test run repeated 7 times, with the 4 most extreme values filtered out, and the remaining 3 test runs averaged out)
+## Fourth End-to-End Testing Terminal (For a test run repeated 7 times, with the 4 most extreme values filtered out, and the remaining 3 test runs averaged out)
 
 ```bash
 cd execs

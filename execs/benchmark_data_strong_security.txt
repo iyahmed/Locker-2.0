@@ -1,30 +1,44 @@
 Benchmark data log
 
 ======= First Phase: Warm-up Request 1 =======
-Data: [{"rid":"user10","op":"write","key":"admiralty","val":"\"aUpa\""},{"rid":"user9","op":"write","key":"AUP","val":"\"WERW\""},{"rid":"user7","op":"write","key":"argy-bargying","val":"\"eWQ3\""}]
-Response: {"user10":"correct_write","user7":"correct_write","user9":"correct_write"}
+Data: [{"rid":"user8","op":"write","key":"arrays","val":"\"NTFN\""},{"rid":"user8","op":"write","key":"Anaplasma","val":"\"d3RZ\""},{"rid":"user6","op":"read","key":"Anaplasma","val":"\"emxZ\""}]
+Response: {"user8":["correct_write","correct_write"]}
 
 ======= First Phase: Warm-up Request 2 =======
-Data: [{"rid":"user4","op":"read","key":"AUP","val":"\"VDEz\""},{"rid":"user10","op":"read","key":"admiralty","val":"\"RjBU\""},{"rid":"user5","op":"read","key":"admiralty","val":"\"cG90\""}]
-Response: {"user10":"\"aUpa\"","user4":"\"WERW\"","user5":"\"aUpa\""}
+Data: [{"rid":"user6","op":"write","key":"affixing","val":"\"VjY5\""},{"rid":"user8","op":"write","key":"allograph","val":"\"UUIy\""},{"rid":"user7","op":"read","key":"affixing","val":"\"TFRR\""}]
+Response: {"user6":"correct_write","user8":"correct_write"}
 
 ======= First Phase: Warm-up Request 3 =======
-Data: [{"rid":"user3","op":"write","key":"Abilene","val":"\"Z3Vu\""},{"rid":"user3","op":"read","key":"Abilene","val":"\"ZWMw\""},{"rid":"user1","op":"write","key":"anociassociation","val":"\"T21m\""}]
-Response: {"user1":"correct_write","user3":"correct_write"}
+Data: [{"rid":"user6","op":"read","key":"affixing","val":"\"ck91\""},{"rid":"user9","op":"read","key":"allograph","val":"\"S2FM\""},{"rid":"user2","op":"read","key":"Anaplasma","val":"\"MVBX\""}]
+Response: {"user2":"\"d3RZ\"","user9":"\"UUIy\""}
 
 ======= Second Phase: Delete Request =======
-Data: [{"rid":"user3","op":"delete","key":"admiralty","val":""},{"rid":"user2","op":"delete","key":"AUP","val":""}]
-Response: {"user2":"correct_delete","user3":"correct_delete"}
+Data: [{"rid":"user5","op":"delete","key":"arrays","val":""},{"rid":"user4","op":"delete","key":"Anaplasma","val":""}]
+Response: {"user4":"correct_delete","user5":"correct_delete"}
 
 ======= Third Phase: Final Read Verification =======
-Data: [{"rid":"user3","op":"read","key":"Abilene","val":""},{"rid":"user4","op":"read","key":"admiralty","val":""},{"rid":"user6","op":"read","key":"anociassociation","val":""},{"rid":"user4","op":"read","key":"argy-bargying","val":""},{"rid":"user8","op":"read","key":"AUP","val":""}]
-Response: {"user6":"\"T21m\""}
+Data: [{"rid":"user5","op":"read","key":"affixing","val":""},{"rid":"user4","op":"read","key":"allograph","val":""},{"rid":"user1","op":"read","key":"Anaplasma","val":""},{"rid":"user9","op":"read","key":"arrays","val":""}]
+Response: {"user4":"\"UUIy\""}
 
 ======= Results: =======
-Disk I/O Metrics: Reads=0, Writes=2064 sectors
-Network I/O Metrics: Received=48942 bytes, Sent=47677 bytes
-Runtime: 6.621072239 seconds
-Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 5
-Memory Usage (approx): 17.89%
-CPU Usage (approx): 0.6%
-Top Process RSS (KB), Peak RAM Usage: 397320 (plasmashell)
+Disk I/O Metrics: Reads=0, Writes=32 sectors
+Network I/O Metrics: Packets Received=44614 bytes, Packets Sent=44390 bytes
+Runtime: 5.752136195 seconds
+Final configuration: warm-up batches: 3, batch size: 3, delete ops: 2, read verification: 4
+Memory Usage: 23.45%
+CPU Usage: 1.4%
+Top Process RSS: 459348 KB
+Disk I/O Metrics: Reads=0, Writes=32 sectors
+Network I/O Metrics: Packets Received=44614 bytes, Packets Sent=44390 bytes
+The benchmark's runtime was 5.752136195 seconds
+Memory Usage: 23.45%
+CPU Usage: 1.4%
+Top Process RSS: 459348 KB
+Average Runtime: 5.872 seconds
+Average Memory Usage: 23.343%
+Average CPU Usage: 1.466%
+Average Peak RSS: 460653.333 KB
+Average Disk Reads: 0 sectors
+Average Disk Writes: 874.666 sectors
+Average Network RX: 49357.000 bytes
+Average Network TX: 49559.333 bytes
