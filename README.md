@@ -172,7 +172,7 @@ python obliv_server.py
 ### Second EMM to Plaintext MultiMap Testing Terminal
 
 ```bash
-gvm use go1.22.2
+gvm use go1.22.1
 go run testing_emm.go
 ```
 

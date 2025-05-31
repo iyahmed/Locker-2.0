@@ -52,7 +52,13 @@ type DiskStats struct {
 // Constructing the Plaintext MultiMap
 func newPlaintextMultiMap() *PlaintextMultiMap {
 	// Creating a temporary file for the plaintext multimap's disk read/writes
-	dir, err := ioutil.TempDir("/var/tmp", "plaintext_multimap")
+	// dir, err := ioutil.TempDir("/var/tmp", "plaintext_multimap")
+	// dir, err := ioutil.TempDir("/mnt/data", "plaintext_multimap")
+	baseDir := "/mnt/data"
+	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
+		baseDir = os.TempDir() // fallback to /tmp or system default
+	}
+	dir, err := ioutil.TempDir(baseDir, "plaintext_multimap")
 	if err != nil {
 		log.Fatalf("Could not create a temporary directory: %v", err)
 	}
@@ -73,12 +79,19 @@ func (p *PlaintextMultiMap) Read(key string) []string {
 	// Returning the corresponding value paired to the key, if possible
 	val := p.store[key]
 	// Writing it into the temporary file
+	// path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
+	// _ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
+	// _, _ = ioutil.ReadFile(path)
+	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
-	_ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
+	f, _ := os.Create(path)
+	pad := make([]byte, 4096)
+	copy(pad, []byte(strings.Join(val, ",")))
+	_, _ = f.Write(pad)
+	_ = f.Sync()
+	_ = f.Close()
+	_, _ = ioutil.ReadFile(path)
 	syscall.Sync()
-	// Forcing the file read to be registered as an disk operation
-	content, _ := ioutil.ReadFile(path)
-	_ = content
 	return val
 }
 
@@ -91,8 +104,16 @@ func (p *PlaintextMultiMap) Write(key, val string) {
 	// Writing the (key, value) pair into the Plaintext MultiMap, if possible
 	p.store[key] = append(p.store[key], val)
 	// Writing it into a temporary file
+	// path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
+	// _ = ioutil.WriteFile(path, []byte(val), 0644)
+	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
-	_ = ioutil.WriteFile(path, []byte(val), 0644)
+	f, _ := os.Create(path)
+	pad := make([]byte, 4096)
+	copy(pad, []byte(val))
+	_, _ = f.Write(pad)
+	_ = f.Sync()
+	_ = f.Close()
 	syscall.Sync()
 }
 
@@ -105,8 +126,16 @@ func (p *PlaintextMultiMap) Delete(key string) {
 	// Deleting the (key, value) pair from the Plaintext MultiMap, if possible
 	delete(p.store, key)
 	// Writing it into a temporary file
+	// path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
+	// _ = ioutil.WriteFile(path, []byte(key), 0644)
+	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
-	_ = ioutil.WriteFile(path, []byte(key), 0644)
+	f, _ := os.Create(path)
+	pad := make([]byte, 4096)
+	copy(pad, []byte(key))
+	_, _ = f.Write(pad)
+	_ = f.Sync()
+	_ = f.Close()
 	syscall.Sync()
 }
 
