@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"syscall"
+	"io"
 	"path/filepath"
 	"locker/libs/emm"
 )
@@ -367,7 +368,7 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 		cacheReads = append(cacheReads, float64(creads))
 		cacheWrites = append(cacheWrites, float64(cwrites))
 
-		fmt.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors | Disk Cache Reads: %d sectors | Disk Cache Writes: %d sectors \n",
+		log.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors | Disk Cache Reads: %d sectors | Disk Cache Writes: %d sectors \n",
 			name, run, elapsed, mem, cpu, rss, dreads, dwrites, creads, cwrites)
 	}
 
@@ -380,15 +381,15 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 	avgDWrites := averageFloat64(diskWrites)
 	avgCReads := averageFloat64(cacheReads)
 	avgCWrites := averageFloat64(cacheWrites)
-	fmt.Printf("\n\nAverage Metrics for %s (Middle 3 of 7 Runs):\n", name)
-	fmt.Printf("Execution-Time/Wall-Clock Time/Runtime: %.3f Seconds\n", avgRuntime)
-	fmt.Printf("Memory Utilization: %.2f%%\n", avgMem)
-	fmt.Printf("CPU Utilization: %.2f%%\n", avgCPU)
-	fmt.Printf("Top Process' Resident Set Size (RSS): %.0f KB\n", avgRSS)
-	fmt.Printf("Direct Disk Reads: %.0f sectors\n", avgDReads)
-	fmt.Printf("Direct Disk Writes: %.0f sectors\n", avgDWrites)
-	fmt.Printf("Indirect Cache Reads: %.0f sectors\n", avgCReads)
-	fmt.Printf("Indirect Cache Writes: %.0f sectors\n\n", avgCWrites)
+	log.Printf("\n\nAverage Metrics for %s (Middle 3 of 7 Runs):\n", name)
+	log.Printf("Execution-Time/Wall-Clock Time/Runtime: %.3f Seconds\n", avgRuntime)
+	log.Printf("Memory Utilization: %.2f%%\n", avgMem)
+	log.Printf("CPU Utilization: %.2f%%\n", avgCPU)
+	log.Printf("Top Process' Resident Set Size (RSS): %.0f KB\n", avgRSS)
+	log.Printf("Direct Disk Reads: %.0f sectors\n", avgDReads)
+	log.Printf("Direct Disk Writes: %.0f sectors\n", avgDWrites)
+	log.Printf("Indirect Cache Reads: %.0f sectors\n", avgCReads)
+	log.Printf("Indirect Cache Writes: %.0f sectors\n\n", avgCWrites)
 	// return avg
 	return 0
 }
@@ -402,6 +403,17 @@ func main() {
 	keys := readKeys("medium_keys.txt")
 	plainTest := newPlaintextMultiMap()
 	realEMM := newRealEMMWrapper()
+
+	// Logging Logic
+	logFile, err := os.Create("EMM_benchmark_results.log")
+	if err != nil {
+		log.Fatalf("Could not create benchmark log file: %v", err)
+	}
+	defer logFile.Close()
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(multiWriter)
+	// os.Stdout = struct{ io.Writer }{multiWriter }
+	log.Println("Benchmarking started. Output will also be saved to a log file")
 
 	// Benchmarking logic
 	benchmark("Plaintext MultiMap", plainTest, keys, users)

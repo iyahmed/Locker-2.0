@@ -1,0 +1,39 @@
+2025/05/31 11:47:06 Benchmarking started. Output will also be saved to a log file
+2025/05/31 11:47:06 Plaintext MultiMap Run 1 completed in 3.168 seconds | Memory: 38.00% | CPU: 25.00% | Top-Process's RSS: 18556 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 128 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 2 completed in 2.841 seconds | Memory: 38.40% | CPU: 29.86% | Top-Process's RSS: 18556 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 120 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 3 completed in 2.856 seconds | Memory: 38.81% | CPU: 31.65% | Top-Process's RSS: 18556 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 120 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 4 completed in 2.912 seconds | Memory: 16.45% | CPU: 35.53% | Top-Process's RSS: 16716 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 120 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 5 completed in 3.522 seconds | Memory: 16.88% | CPU: 31.38% | Top-Process's RSS: 16716 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 144 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 6 completed in 3.054 seconds | Memory: 17.28% | CPU: 37.70% | Top-Process's RSS: 16716 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 128 sectors 
+2025/05/31 11:47:06 Plaintext MultiMap Run 7 completed in 3.612 seconds | Memory: 17.69% | CPU: 33.88% | Top-Process's RSS: 16716 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 72 sectors | Disk Cache Writes: 152 sectors 
+2025/05/31 11:47:06 
+
+Average Metrics for Plaintext MultiMap (Middle 3 of 7 Runs):
+2025/05/31 11:47:06 Execution-Time/Wall-Clock Time/Runtime: 3.045 Seconds
+2025/05/31 11:47:06 Memory Utilization: 24.33%
+2025/05/31 11:47:06 CPU Utilization: 32.31%
+2025/05/31 11:47:06 Top Process' Resident Set Size (RSS): 17329 KB
+2025/05/31 11:47:06 Direct Disk Reads: 0 sectors
+2025/05/31 11:47:06 Direct Disk Writes: 0 sectors
+2025/05/31 11:47:06 Indirect Cache Reads: 72 sectors
+2025/05/31 11:47:06 Indirect Cache Writes: 125 sectors
+
+2025/05/31 11:47:06 Baseline Secure EMM Run 1 completed in 19.070 seconds | Memory: 22.13% | CPU: 9.31% | Top-Process's RSS: 17792 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 24 sectors | Disk Cache Writes: 119 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 2 completed in 28.564 seconds | Memory: 26.15% | CPU: 8.65% | Top-Process's RSS: 17792 KB | Disk Reads: 0 sectors | Disk Writes: 1024 sectors | Disk Cache Reads: 25 sectors | Disk Cache Writes: 138 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 3 completed in 20.925 seconds | Memory: 29.28% | CPU: 14.21% | Top-Process's RSS: 17792 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 20 sectors | Disk Cache Writes: 120 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 4 completed in 24.468 seconds | Memory: 20.70% | CPU: 14.93% | Top-Process's RSS: 17920 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 23 sectors | Disk Cache Writes: 137 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 5 completed in 21.816 seconds | Memory: 24.09% | CPU: 19.07% | Top-Process's RSS: 17920 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 20 sectors | Disk Cache Writes: 128 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 6 completed in 23.446 seconds | Memory: 27.50% | CPU: 19.94% | Top-Process's RSS: 18048 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 22 sectors | Disk Cache Writes: 137 sectors 
+2025/05/31 11:47:06 Baseline Secure EMM Run 7 completed in 18.159 seconds | Memory: 30.25% | CPU: 27.99% | Top-Process's RSS: 18304 KB | Disk Reads: 0 sectors | Disk Writes: 0 sectors | Disk Cache Reads: 18 sectors | Disk Cache Writes: 111 sectors 
+2025/05/31 11:47:06 
+
+Average Metrics for Baseline Secure EMM (Middle 3 of 7 Runs):
+2025/05/31 11:47:06 Execution-Time/Wall-Clock Time/Runtime: 22.062 Seconds
+2025/05/31 11:47:06 Memory Utilization: 25.91%
+2025/05/31 11:47:06 CPU Utilization: 16.07%
+2025/05/31 11:47:06 Top Process' Resident Set Size (RSS): 17877 KB
+2025/05/31 11:47:06 Direct Disk Reads: 0 sectors
+2025/05/31 11:47:06 Direct Disk Writes: 0 sectors
+2025/05/31 11:47:06 Indirect Cache Reads: 22 sectors
+2025/05/31 11:47:06 Indirect Cache Writes: 128 sectors
+
