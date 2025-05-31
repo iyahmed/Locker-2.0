@@ -52,8 +52,6 @@ type DiskStats struct {
 // Constructing the Plaintext MultiMap
 func newPlaintextMultiMap() *PlaintextMultiMap {
 	// Creating a temporary file for the plaintext multimap's disk read/writes
-	// dir, err := ioutil.TempDir("/var/tmp", "plaintext_multimap")
-	// dir, err := ioutil.TempDir("/mnt/data", "plaintext_multimap")
 	baseDir := "/mnt/data"
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
 		baseDir = os.TempDir() // fallback to /tmp or system default
@@ -79,10 +77,6 @@ func (p *PlaintextMultiMap) Read(key string) []string {
 	// Returning the corresponding value paired to the key, if possible
 	val := p.store[key]
 	// Writing it into the temporary file
-	// path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
-	// _ = ioutil.WriteFile(path, []byte(strings.Join(val, ",")), 0644)
-	// _, _ = ioutil.ReadFile(path)
-	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("read_%d_%s", time.Now().UnixNano(), key))
 	f, _ := os.Create(path)
 	pad := make([]byte, 4096)
@@ -104,9 +98,6 @@ func (p *PlaintextMultiMap) Write(key, val string) {
 	// Writing the (key, value) pair into the Plaintext MultiMap, if possible
 	p.store[key] = append(p.store[key], val)
 	// Writing it into a temporary file
-	// path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
-	// _ = ioutil.WriteFile(path, []byte(val), 0644)
-	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("write_%d_%s", time.Now().UnixNano(), key))
 	f, _ := os.Create(path)
 	pad := make([]byte, 4096)
@@ -126,9 +117,6 @@ func (p *PlaintextMultiMap) Delete(key string) {
 	// Deleting the (key, value) pair from the Plaintext MultiMap, if possible
 	delete(p.store, key)
 	// Writing it into a temporary file
-	// path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
-	// _ = ioutil.WriteFile(path, []byte(key), 0644)
-	// syscall.Sync()
 	path := filepath.Join(p.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
 	f, _ := os.Create(path)
 	pad := make([]byte, 4096)
@@ -312,9 +300,17 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 		totalRuns        = 7
 	)
 
-	// Looping for each individual run
+	// List of each individual runs for each metric
 	runtimes := []float64{}
-	for run := 1; run <= totalRuns; run++ {
+	memUsages := []float64{}
+	cpuUsages := []float64{}
+	rssValues := []float64{}
+	diskReads := []float64{}
+	diskWrites := []float64{}
+	cacheReads := []float64{}
+	cacheWrites := []float64{}
+
+	for run := 1; run <= totalRuns; run++ { // Looping for each individual run
 		// Initlization for an individual run
 		diskBefore := readDiskIO()
 		start := time.Now()
@@ -363,15 +359,38 @@ func benchmark(name string, mmap MultiMap, keys, users []string) float64 {
 		runtimes = append(runtimes, elapsed)
 		diskAfter := readDiskIO()
 		mem, cpu, rss, dreads, dwrites, creads, cwrites := getUsageStats(start, diskBefore, diskAfter)
+		memUsages = append(memUsages, mem)
+		cpuUsages = append(cpuUsages, cpu)
+		rssValues = append(rssValues, float64(rss))
+		diskReads = append(diskReads, float64(dreads))
+		diskWrites = append(diskWrites, float64(dwrites))
+		cacheReads = append(cacheReads, float64(creads))
+		cacheWrites = append(cacheWrites, float64(cwrites))
 
 		fmt.Printf("%s Run %d completed in %.3f seconds | Memory: %.2f%% | CPU: %.2f%% | Top-Process's RSS: %d KB | Disk Reads: %d sectors | Disk Writes: %d sectors | Disk Cache Reads: %d sectors | Disk Cache Writes: %d sectors \n",
 			name, run, elapsed, mem, cpu, rss, dreads, dwrites, creads, cwrites)
 	}
 
-	// Outputting the average runs' metrics
-	avg := averageFloat64(runtimes)
-	fmt.Printf("\nAverage Runtime for %s (Middle 3 of 7 Runs): %.3f Seconds\n\n", name, avg)
-	return avg
+	// Outputting the average runs' (Middle 3 of 7 Runs) metrics
+	avgRuntime := averageFloat64(runtimes)
+	avgMem := averageFloat64(memUsages)
+	avgCPU := averageFloat64(cpuUsages)
+	avgRSS := averageFloat64(rssValues)
+	avgDReads := averageFloat64(diskReads)
+	avgDWrites := averageFloat64(diskWrites)
+	avgCReads := averageFloat64(cacheReads)
+	avgCWrites := averageFloat64(cacheWrites)
+	fmt.Printf("\n\nAverage Metrics for %s (Middle 3 of 7 Runs):\n", name)
+	fmt.Printf("Execution-Time/Wall-Clock Time/Runtime: %.3f Seconds\n", avgRuntime)
+	fmt.Printf("Memory Utilization: %.2f%%\n", avgMem)
+	fmt.Printf("CPU Utilization: %.2f%%\n", avgCPU)
+	fmt.Printf("Top Process' Resident Set Size (RSS): %.0f KB\n", avgRSS)
+	fmt.Printf("Direct Disk Reads: %.0f sectors\n", avgDReads)
+	fmt.Printf("Direct Disk Writes: %.0f sectors\n", avgDWrites)
+	fmt.Printf("Indirect Cache Reads: %.0f sectors\n", avgCReads)
+	fmt.Printf("Indirect Cache Writes: %.0f sectors\n\n", avgCWrites)
+	// return avg
+	return 0
 }
 
 
