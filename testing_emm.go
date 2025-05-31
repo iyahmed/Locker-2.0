@@ -51,10 +51,10 @@ type DiskStats struct {
 
 // Constructing the Plaintext MultiMap
 func newPlaintextMultiMap() *PlaintextMultiMap {
-	// Creating a temporary file for the plaintext multimap's disk read/writes
+	// Creating a temporary file for the Plaintext MultiMap's disk read/writes
 	baseDir := "/mnt/data"
 	if _, err := os.Stat(baseDir); os.IsNotExist(err) {
-		baseDir = os.TempDir() // fallback to /tmp or system default
+		baseDir = os.TempDir() // This is a fallback to either the /tmp directory or system default temporary directory
 	}
 	dir, err := ioutil.TempDir(baseDir, "plaintext_multimap")
 	if err != nil {

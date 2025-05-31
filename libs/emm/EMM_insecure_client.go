@@ -6,13 +6,16 @@ package emm
 
 // Needed imports
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"os"
 	"bytes"
 	"log"
 	"sync"
+	"syscall"
+	"time"
+	"path/filepath"
+	"encoding/json"
 	"crypto/cipher"
 	"crypto/aes"
 	"crypto/rand"
@@ -26,11 +29,12 @@ type Client struct {
 	symKey    []byte
 	idCounter uint64
 	idLock    sync.RWMutex
+	tempDir   string
 }
 
 // Global variables' default states
 const (
-	logCap     = uint32(6)
+	logCap    = uint32(6)
 )
 
 // New EMM client interface function
@@ -38,10 +42,19 @@ const (
 // Constructor for the internal client constructor
 func NewClient() *Client {
 	key := newLoadOrGenerateKey()
+	// Creating a temporary file for the Baseline EMM's disk read/writes
+	tempDir := "/mnt/data"
+	if _, err := os.Stat(tempDir); os.IsNotExist(err) {
+		tempDir = os.TempDir()
+	}
+	if err := os.MkdirAll(tempDir, 0700); err != nil {
+		log.Fatalf("Could not create temp directory: %v", err)
+	}
 	return &Client{
 		oram:      oram.ORAM_Init(logCap, blockSize, z),
 		symKey:    key,
 		idCounter: 1,
+		tempDir:   tempDir,
 	}
 }
 
@@ -51,7 +64,7 @@ func NewClient() *Client {
 func newLoadOrGenerateKey() []byte {
 	// Attempting to load the key from the default "emm_key.bin" file
 	if data, err := os.ReadFile(keyFile); err == nil && len(data) == 32 {
-		fmt.Println("Loaded the default AES symmetric key from disk.")
+		fmt.Println("Loaded the default AES symmetric key from disk.\n")
 		return data
 	} 
 
@@ -152,6 +165,18 @@ func (c *Client) Put(key string, val string) error {
 	}
 	// Sending the new (key, value) pair into the ORAM
 	c.oram.ORAM_Set(idx, ciphertext)
+	
+	// Writing it into a temporary file
+	path := filepath.Join(c.tempDir, fmt.Sprintf("put_%d_%s", time.Now().UnixNano(), key))
+	f, err := os.Create(path)
+	if err == nil {
+		pad := make([]byte, 4096)
+		copy(pad, ciphertext)
+		_, _ = f.Write(pad)
+		_ = f.Sync()
+		_ = f.Close()
+		syscall.Sync()
+	}
 
 	// Returning NIL upon success
 	return nil
@@ -181,6 +206,18 @@ func (c *Client) Get(key string) ([]string, error) {
 		return nil, nil // This is to be consistent with the corresponding secure EMM implementation
 	}
 	
+	// Writing it into a temporary file
+	path := filepath.Join(c.tempDir, fmt.Sprintf("get_%d_%s", time.Now().UnixNano(), key))
+	f, err := os.Create(path)
+	if err == nil {
+		pad := make([]byte, 4096)
+		copy(pad, plaintext)
+		_, _ = f.Write(pad)
+		_ = f.Sync()
+		_ = f.Close()
+		syscall.Sync()
+	}
+
 	// Returning either the found value upon success or NIL upon failure
 	return result, nil
 }
@@ -195,6 +232,18 @@ func (c *Client) Delete(key string) error {
 
 	// Deleting the value that is found in the ORAM
 	c.oram.ORAM_Delete(idx, blockSize)
+	
+	// Writing it into a temporary file
+	path := filepath.Join(c.tempDir, fmt.Sprintf("delete_%d_%s", time.Now().UnixNano(), key))
+	f, err := os.Create(path)
+	if err == nil {
+		pad := make([]byte, 4096)
+		copy(pad, []byte(key))
+		_, _ = f.Write(pad)
+		_ = f.Sync()
+		_ = f.Close()
+		syscall.Sync()
+	}
 
 	// Returning NIL upon success
 	return nil
